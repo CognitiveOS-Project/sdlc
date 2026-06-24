@@ -57,5 +57,5 @@
 - [ ] All repos tagged `v0.1.0`
 - [ ] Bootable ISO published to GitHub Releases
 - [ ] RPi image published
-- [ ] Registry running at registry.cognitiveos.org
+- [ ] Registry running at registry.cognitive-os.org
 - [ ] Release notes written
