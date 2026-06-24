@@ -16,14 +16,6 @@ Software Development Life Cycle documentation for the CognitiveOS project.
 | `adr/` | Architecture Decision Records |
 | `standards/` | Coding standards and conventions |
 
-<<<<<<< Updated upstream
-## Related
-
-- [CognitiveOS](https://github.com/CognitiveOS-Project/cognitiveos) — main project repository
-- [cognitive-os.org](https://cognitive-os.org) — project website
-- [Product Specs](https://github.com/CognitiveOS-Project/product-specs) — standards, schemas, and protocol definitions
-- [CognitiveOS Project](https://github.com/CognitiveOS-Project) — GitHub organization
-=======
 ## Contributing
 
 Read the guides in `workflow/` before submitting changes:
@@ -34,7 +26,6 @@ Read the guides in `workflow/` before submitting changes:
 - [`workflow/ci-cd.md`](workflow/ci-cd.md) — CI/CD pipeline definitions
 
 All repos in the CognitiveOS project follow topic-branch flow: branch from `development`, PR to `development`, squash merge, then release PR to `main`.
->>>>>>> Stashed changes
 
 ## Author
 
