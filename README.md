@@ -15,3 +15,7 @@ Software Development Life Cycle documentation for the CognitiveOS project.
 | `workflow/ci-cd.md` | CI/CD pipeline definitions |
 | `adr/` | Architecture Decision Records |
 | `standards/` | Coding standards and conventions |
+
+## Author
+
+**Jean Machuca** — [GitHub](https://github.com/jeanmachuca) · [Sponsor](https://github.com/sponsors/jeanmachuca)
