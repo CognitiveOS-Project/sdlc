@@ -25,13 +25,14 @@ Software Development Life Cycle documentation for the CognitiveOS project.
 
 ## Contributing
 
-1. Branch from `development`, not `main`
-2. Use topic branches: `feature/<name>`, `fix/<name>`, `bugfix/<name>`
-3. Open a PR to `development` with a clear title and description
-4. Merge via squash after review
-5. Changes flow to `main` via a release PR
+Read the guides in `workflow/` before submitting changes:
 
-See the [SDLC repo](https://github.com/CognitiveOS-Project/sdlc) for the full contribution guide, code review standards, and testing strategy.
+- [`workflow/contribution-guide.md`](workflow/contribution-guide.md) — full contribution process
+- [`workflow/code-review.md`](workflow/code-review.md) — review checklist and expectations
+- [`workflow/testing.md`](workflow/testing.md) — testing strategy across all layers
+- [`workflow/ci-cd.md`](workflow/ci-cd.md) — CI/CD pipeline definitions
+
+All repos in the CognitiveOS project follow topic-branch flow: branch from `development`, PR to `development`, squash merge, then release PR to `main`.
 
 ## Author
 
