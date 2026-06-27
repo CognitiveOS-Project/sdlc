@@ -86,7 +86,7 @@ jobs:
           path: output/*.iso
 ```
 
-## Release Workflow
+## Release Workflow (Per Repo)
 
 File: `.github/workflows/release.yml`
 
@@ -109,6 +109,49 @@ jobs:
           files: |
             cognitiveos-*.iso
             cognitiveos-*.img
+```
+
+## Coordinated Release (Cross-Repo)
+
+At the end of a release cycle, all 13 repos must be tagged at the same SemVer version. Use the `release-tag.sh` script:
+
+```bash
+scripts/release-tag.sh v1.0.0-alpha "v1.0.0-alpha — System foundations complete"
+```
+
+The script:
+- Clones each repo on demand into a persistent cache directory
+- Creates **annotated tags** (compliant with release-strategy.md)
+- Skips repos where the tag already exists (idempotent)
+- Reports per-repo status in a summary table
+- Exits non-zero if any repo fails
+
+### Manual Trigger (GitHub Actions)
+
+File: `.github/workflows/coordinated-release.yml`
+
+```yaml
+name: Coordinated Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SemVer tag (e.g. v1.0.0-alpha)'
+        required: true
+      message:
+        description: 'Tag message'
+        required: true
+        default: 'CognitiveOS coordinated release'
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/release-tag.sh "${{ inputs.version }}" "${{ inputs.message }}"
+        env:
+          COGNITIVEOS_RELEASE_DIR: /tmp/cognitiveos-releases
 ```
 
 ## Status Badges
