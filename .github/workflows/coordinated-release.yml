@@ -1,0 +1,21 @@
+name: Coordinated Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SemVer tag (e.g. v1.0.0-alpha)'
+        required: true
+      message:
+        description: 'Tag message'
+        required: true
+        default: 'CognitiveOS coordinated release'
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/release-tag.sh "${{ inputs.version }}" "${{ inputs.message }}"
+        env:
+          COGNITIVEOS_RELEASE_DIR: /tmp/cognitiveos-releases
