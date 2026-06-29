@@ -135,25 +135,36 @@ cognitiveos-distro ───── depends on all built binaries
 
 **Repos:** `inference`
 
-**Goal:** Working inference engine that can load and run GGUF models, exposed via an Ollama-compatible API.
+**Goal:** Working inference engine that can load and run GGUF models, exposed via an Ollama-compatible API. Architecture uses a **vendored llama.cpp C source + thin CGo bridge** — no `llama-cli` subprocess.
 
 | Task | Dependencies | Est. effort |
 |------|-------------|-------------|
-| llama.cpp cross-compilation for Alpine | None | Medium |
-| `POST /api/generate` | None | Medium |
-| `POST /api/chat` | None | Medium |
+| Vendor `llama.cpp` git submodule (pinned commit) | None | Small |
+| `bridge.go` — single `import "C"` file wrapping llama.h API | None | Medium |
+| `cgobackend.go` — `CgoBackend` struct implementing `Backend` interface | bridge.go | Medium |
+| `loadopts.go` — `LoadOptions{NumCtx, GPULayers, Threads}` | None | Small |
+| cmake + gcc toolchain in `Dockerfile.build` | None | Medium |
+| Register `--backend cgo` in `cmd/coginfer/main.go` | cgobackend.go | Small |
+| `POST /api/generate` — CGo-backed inference | server.go, bridge.go | Medium |
+| `POST /api/chat` | generate handler | Small |
 | `GET /api/tags` — model listing | None | Small |
-| `GET /cognitiveos/status` — resource reporting | inference-api spec | Small |
+| `GET /cognitiveos/status` — resource reporting (CGo stats) | inference-api spec | Small |
 | `GET /cognitiveos/capabilities` — hardware detection | inference-api spec | Small |
+| Wire `LoadOptions` from HTTP request params to `backend.Load()` | server.go | Small |
 | Resource negotiation with cognitiveosd | cognitiveosd-api | Medium |
-| Idle timeout and auto-unload | None | Small |
-| Model swap (unload old, load new) | None | Medium |
+| Idle timeout and auto-unload (calls `CgoBackend.Unload()`) | None | Small |
+| Model swap (unload old, load new via CGo) | None | Medium |
+| Fix `cmd/cograw/main.go` bugs — undefined `llamaBin`, `verifyModel()`, `ramMB` | None | Small |
+| Replace `exec.Command("llama-cli")` in cograw with CGo bridge | bridge.go | Medium |
+| JSON-RPC 2.0 handler for Raw Model (wrapping bridge calls) | None | Medium |
 
 **Definition of done:**
-- Raw Model loads from `/cognitiveos/models/raw/raw-model.gguf`
-- `POST /api/generate` produces coherent completions
+- Raw Model loads from `/cognitiveos/models/raw/raw-model.gguf` via CGo bridge (no subprocess)
+- `POST /api/generate` produces coherent completions via CGo
 - Resource usage reported correctly in `/cognitiveos/status`
 - Inference engine communicates with cognitiveosd for load/unload
+- `CLIBackend` and `--backend cli` flag removed (Phase 5)
+- `--backend` defaults to `"cgo"` in production (CGO_ENABLED=1) and `"mock"` when CGO_ENABLED=0
 
 ### Phase 4: System Daemon
 
