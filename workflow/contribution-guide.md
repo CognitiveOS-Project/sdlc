@@ -20,7 +20,7 @@ git commit -m "<type>: <description>"
 git push -u origin HEAD
 ```
 
-Create a PR into `development`. See [git-workflow.md](https://github.com/jeanmachuca/aiworkspace/blob/main/.opencode/instructions/git-workflow.md) for full details.
+Create a PR into `development`. See the root `AGENTS.md` and `.opencode/instructions/git-workflow.md` in the workspace root for full details.
 
 Commit types:
 - `feat:` — New feature
