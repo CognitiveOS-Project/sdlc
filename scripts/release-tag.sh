@@ -9,7 +9,7 @@
 # Env:
 #   COGNITIVEOS_RELEASE_DIR   Clone cache directory (default: ~/.cache/cognitiveos/releases)
 #
-# Requires: git (SSH-configured), network access to github.com
+# Requires: gh (SSH-configured), network access to github.com
 
 set -e
 
@@ -17,10 +17,19 @@ BASE_DIR="${COGNITIVEOS_RELEASE_DIR:-$HOME/.cache/cognitiveos/releases}"
 ORG="CognitiveOS-Project"
 REPOS="cognitiveos product-specs sdlc cpm core-mcp-bridges inference cognitiveosd cli registry-server cgp-template cognitiveos-distro cognitive-os.org .github"
 
+# Map remote repo names to local checkout directories.
+# .github collides with /.github in the workspace root (see AGENTS.md).
+repo_dir() {
+    case "$1" in
+        .github) echo "org-repo" ;;
+        *)       echo "$1" ;;
+    esac
+}
+
 list_tags() {
     echo "=== Current tags per repo ==="
     for repo in $REPOS; do
-        target="$BASE_DIR/$repo"
+        target="$BASE_DIR/$(repo_dir "$repo")"
         if [ -d "$target/.git" ]; then
             latest=$(cd "$target" && git tag -l 'v*' 2>/dev/null | sort -V | tail -1)
             echo "  $repo  ${latest:-no tags}"
@@ -83,7 +92,7 @@ SUCCEEDED=0
 RESULTS_FILE=$(mktemp)
 
 for repo in $REPOS; do
-    target="$BASE_DIR/$repo"
+    target="$BASE_DIR/$(repo_dir "$repo")"
     repo_label=$(printf "%-18s" "$repo")
 
     if [ "$DRY_RUN" = true ]; then
@@ -95,7 +104,7 @@ for repo in $REPOS; do
 
     # clone if not present
     if [ ! -d "$target/.git" ]; then
-        if ! git clone "git@github.com:${ORG}/${repo}.git" "$target" 2>/dev/null; then
+        if ! gh repo clone "${ORG}/${repo}" "$target" 2>/dev/null; then
             echo "  $repo_label✗ clone failed"
             echo "$repo  ✗ clone failed" >> "$RESULTS_FILE"
             FAILED=$((FAILED + 1))
@@ -105,7 +114,7 @@ for repo in $REPOS; do
 
     # fetch, tag, push — subshell for isolation
     if (cd "$target" && \
-        git fetch --tags origin 2>/dev/null && \
+        git fetch --tags --force origin 2>/dev/null && \
         git tag -a "$VERSION" -m "$MSG" 2>/dev/null && \
         git push origin "$VERSION" 2>/dev/null); then
         echo "  $repo_label✓ $VERSION"
