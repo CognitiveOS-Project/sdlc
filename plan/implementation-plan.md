@@ -91,6 +91,9 @@ cognitiveos-distro ───── depends on all built binaries
 | Hardware audit integration (read /proc/meminfo, statfs) | filesystem-hierarchy spec | Medium |
 | Dependency resolution | None | Medium |
 | `cpm search` — registry search client | registry-api spec | Small |
+| `cpm download-weights` — standalone weight download from HF Hub | manifest-fields spec | Medium |
+| `cpm install` — auto-download weights when manifest declares `weights.remote.source` | manifest-fields spec | Medium |
+| `cpm init --template gguf-model` — template for model publishers | manifest-fields spec | Small |
 
 **Definition of done:**
 - `cpm install ./sample.cgp` works on Alpine Linux
@@ -98,6 +101,10 @@ cognitiveos-distro ───── depends on all built binaries
 - `cpm verify` catches malformed archives
 - Hardware audit rejects install on low-RAM device
 - All operations logged to `/cognitiveos/logs/cpm.log`
+- `cpm download-weights --provider hf --kind wide --type gguf <name>` downloads and places model at `/cognitiveos/models/wide/active/`
+- `cpm install` on a `.cgp` with `weights.remote` auto-downloads the model before hardware audit
+- `cpm init --template gguf-model` scaffolds a model-publisher manifest with `weights.remote` block
+- No auth required for public HF models
 
 ### Phase 2: Hardware Bridges
 
