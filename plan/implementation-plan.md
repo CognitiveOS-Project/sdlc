@@ -291,6 +291,36 @@ The registry is a **notary proxy** — it does not host `.cgp` files. Publishers
 - A1-A10 validation rejects malformed publishes at registry level ✅
 - `cpm init my-skill` creates a valid .cgp skeleton ✅
 
+### Phase 8: Autonomous Package Management
+
+**Repos:** `core-mcp-bridges`, `cognitiveosd`, `inference`, `product-specs`
+
+**Goal:** The Wide Model can autonomously discover, install, and remove packages in response to human requests, with every operation validated by the Raw Model.
+
+| Task | Dependencies | Est. effort | Status |
+|------|-------------|-------------|--------|
+| ADR-004: Package Manager MCP Bridge decision record | None | Small | ✅ Done |
+| `product-specs/specs/base-prompt.md` — daemon-level system prompt | None | Small | Pending |
+| `cognitiveos.package.*` domain in mcp-conventions.md | None | Small | Pending |
+| `validate_package_request` RPC in raw-model.md spec | None | Small | Pending |
+| Validation-hook section in cognitiveosd-api.md | None | Small | Pending |
+| `package-mcp` bridge in core-mcp-bridges/ | MCP server library | Medium | Pending |
+| MCP validation hook in cognitiveosd mcp_lifecycle.go | cognitiveosd-api spec | Small | Pending |
+| `validate_package_request` handler in cograw | raw-model.md spec | Small | Pending |
+| `ValidatePackageRequest` method in raw_client.go | None | Small | Pending |
+| `package-mcp` in default MCPBridges config | None | Small | Pending |
+| Base system prompt injection in daemon startup | None | Small | Pending |
+| Tool validation wiring in handlers.go (toolLoop) | None | Small | Pending |
+
+**Definition of done:**
+- Wide Model calls `cognitiveos.package.search("photo viewer")` → daemon validates → package-mcp runs `cpm search`
+- Wide Model calls `cognitiveos.package.install("photo-viewer")` → daemon validates via Raw Model → package-mcp runs `cpm install`
+- Raw Model denies install if manifest contains `raw_model` field
+- Raw Model enforces rate limit (5 ops / 5 min)
+- Read-only ops (search/list/info) go through validation with reduced checks
+- Base system prompt tells the Wide Model it can autonomously install capabilities
+- All 6 package tools are registered and discoverable via `mcp.list_tools`
+
 ## Build Order with Milestones
 
 ```
