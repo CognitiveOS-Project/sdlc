@@ -45,12 +45,21 @@
 - [ ] Raw Model loads at boot
 - [ ] **Demo:** Boot CognitiveOS in QEMU, type a command, get a response
 
-## M6 — Registry Ecosystem
-- [ ] `GET /v1/search` returns results
-- [ ] `cpm publish ./skill.cgp` uploads to registry
-- [ ] `cpm install <name>` downloads from registry
-- [ ] Unlock code flow works end-to-end
-- [ ] `cpm init my-skill` creates valid .cgp skeleton
+## M6 — Registry Ecosystem (Notary Proxy)
+- [x] `GET /v1/search` returns results
+- [x] `GET /v1/patches/{name}/{version}` returns metadata with sha256 + download_url
+- [x] `GET /v1/patches/{name}/{version}/download` redirects to canonical download URL
+- [x] `POST /v1/patches` JSON-only publish with manifest + sha256 + download_url
+- [x] `PUT /v1/patches/{name}/{version}` publish new version
+- [x] A1-A10 publish-time validation (manifest, schema, cycles, file refs, hardware bounds, URLs)
+- [x] Scoped token auth (publish/admin)
+- [x] File-backed persistence (survives restarts)
+- [x] `PATCH .../status`, `POST .../validate`, `GET .../dependencies` endpoints
+- [x] `cpm publish ./skill.cgp --download-url <url>` registers in registry
+- [x] `cpm install <name>` downloads via registry redirect
+- [x] `cpm init my-skill` creates valid .cgp skeleton
+- [ ] SQLite backend (upgrade from file-backed JSON)
+- [ ] Full unlock code flow end-to-end
 - [ ] **Demo:** `cpm search photo` → `cpm install photo-viewer` → AI can show photos
 
 ## M7 — v0.1.0 Release
