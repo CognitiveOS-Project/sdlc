@@ -21,7 +21,7 @@ This plan covers the implementation of all 10 repos in the CognitiveOS-Project o
 | `cli` | UI | Go | Bubble Tea TUI frontend |
 | `cognitiveos-distro` | Distribution | Shell/Docker | Alpine image builder |
 | `cgp-template` | Ecosystem | Template | .cgp skill boilerplate |
-| `registry-server` | Infrastructure | Go | .cgp package registry |
+| `registry-server` | Infrastructure | Go | .cgp notary proxy (metadata + checksum, no file hosting) |
 
 ## Dependency Graph
 
@@ -41,7 +41,7 @@ product-specs ──────────────────────
     │   │
     ├── cli ────────── depends on cognitiveosd (socket client)
     │
-    ├── registry-server ─── depends on registry-api spec
+    ├── registry-server ─── depends on registry-api spec, dependency-validation spec
     │
     └── cgp-template ─ depends on .cgp format spec
 
@@ -135,25 +135,36 @@ cognitiveos-distro ───── depends on all built binaries
 
 **Repos:** `inference`
 
-**Goal:** Working inference engine that can load and run GGUF models, exposed via an Ollama-compatible API.
+**Goal:** Working inference engine that can load and run GGUF models, exposed via an Ollama-compatible API. Architecture uses a **vendored llama.cpp C source + thin CGo bridge** — no `llama-cli` subprocess.
 
 | Task | Dependencies | Est. effort |
 |------|-------------|-------------|
-| llama.cpp cross-compilation for Alpine | None | Medium |
-| `POST /api/generate` | None | Medium |
-| `POST /api/chat` | None | Medium |
+| Vendor `llama.cpp` git submodule (pinned commit) | None | Small |
+| `bridge.go` — single `import "C"` file wrapping llama.h API | None | Medium |
+| `cgobackend.go` — `CgoBackend` struct implementing `Backend` interface | bridge.go | Medium |
+| `loadopts.go` — `LoadOptions{NumCtx, GPULayers, Threads}` | None | Small |
+| cmake + gcc toolchain in `Dockerfile.build` | None | Medium |
+| Register `--backend cgo` in `cmd/coginfer/main.go` | cgobackend.go | Small |
+| `POST /api/generate` — CGo-backed inference | server.go, bridge.go | Medium |
+| `POST /api/chat` | generate handler | Small |
 | `GET /api/tags` — model listing | None | Small |
-| `GET /cognitiveos/status` — resource reporting | inference-api spec | Small |
+| `GET /cognitiveos/status` — resource reporting (CGo stats) | inference-api spec | Small |
 | `GET /cognitiveos/capabilities` — hardware detection | inference-api spec | Small |
+| Wire `LoadOptions` from HTTP request params to `backend.Load()` | server.go | Small |
 | Resource negotiation with cognitiveosd | cognitiveosd-api | Medium |
-| Idle timeout and auto-unload | None | Small |
-| Model swap (unload old, load new) | None | Medium |
+| Idle timeout and auto-unload (calls `CgoBackend.Unload()`) | None | Small |
+| Model swap (unload old, load new via CGo) | None | Medium |
+| Fix `cmd/cograw/main.go` bugs — undefined `llamaBin`, `verifyModel()`, `ramMB` | None | Small |
+| Replace `exec.Command("llama-cli")` in cograw with CGo bridge | bridge.go | Medium |
+| JSON-RPC 2.0 handler for Raw Model (wrapping bridge calls) | None | Medium |
 
 **Definition of done:**
-- Raw Model loads from `/cognitiveos/models/raw/raw-model.gguf`
-- `POST /api/generate` produces coherent completions
+- Raw Model loads from `/cognitiveos/models/raw/raw-model.gguf` via CGo bridge (no subprocess)
+- `POST /api/generate` produces coherent completions via CGo
 - Resource usage reported correctly in `/cognitiveos/status`
 - Inference engine communicates with cognitiveosd for load/unload
+- `CLIBackend` and `--backend cli` flag removed (Phase 5)
+- `--backend` defaults to `"cgo"` in production (CGO_ENABLED=1) and `"mock"` when CGO_ENABLED=0
 
 ### Phase 4: System Daemon
 
@@ -240,26 +251,38 @@ cognitiveos-distro ───── depends on all built binaries
 
 **Repos:** `registry-server`, `cgp-template`
 
-**Goal:** Usable package registry and developer template.
+**Goal:** Usable package notary proxy and developer template.
 
-| Task | Dependencies | Est. effort |
-|------|-------------|-------------|
-| `GET /v1/search` | registry-api | Medium |
-| `GET /v1/patches/{name}/{version}` | registry-api | Small |
-| `GET .../download` — .cgp binary streaming | registry-api | Medium |
-| `POST /v1/patches` — publish with auth | registry-api | Medium |
-| `POST .../unlock` — unlock code verification | registry-api | Medium |
-| SQLite metadata index | None | Medium |
-| Token-based auth | None | Medium |
-| cgp-template with sample patch | cgp-format spec | Small |
-| cgp-template README and documentation | None | Small |
+The registry is a **notary proxy** — it does not host `.cgp` files. Publishers provide a canonical `download_url` and a `sha256` checksum; the registry stores metadata and redirects clients to the download URL. This avoids file storage scaling concerns and allows publishers to host archives on their own infrastructure (GitHub Releases, S3, etc.).
+
+| Task | Dependencies | Est. effort | Status |
+|------|-------------|-------------|--------|
+| `GET /v1/search` — text search across name, description, tags | registry-api | Small | ✅ Done |
+| `GET /v1/patches/{name}` — latest version metadata | registry-api | Small | ✅ Done |
+| `GET /v1/patches/{name}/{version}` — version-specific metadata with full manifest | registry-api | Small | ✅ Done |
+| `GET /v1/patches/{name}/{version}/download` — HTTP 302 redirect to `download_url` | registry-api | Small | ✅ Done |
+| `POST /v1/patches` — JSON-only publish with `manifest`, `sha256`, `download_url` | registry-api | Medium | ✅ Done |
+| `PUT /v1/patches/{name}/{version}` — publish new version, URL validated against body | registry-api | Small | ✅ Done |
+| A1-A10 publish-time validation (manifest parse, schema, SHA-256 format, dep cycles, file refs, hardware bounds, URL reachability) | dependency-validation spec | Large | ✅ Done |
+| Scoped token auth (`publish` scope for POST/PUT, `admin` scope for status/validate) | None | Medium | ✅ Done |
+| `PATCH /v1/patches/{name}/{version}/status` — set active/deprecated/buggy | registry-api | Small | ✅ Done |
+| `POST /v1/patches/{name}/{version}/validate` — re-run A1-A10 on stored manifest | registry-api | Small | ✅ Done |
+| `GET /v1/patches/{name}/dependencies` — dependency tree for a package | registry-api | Small | ✅ Done |
+| File-backed store (JSON file, survives restarts, SQLite adapter interface ready) | None | Medium | ✅ Done |
+| `POST .../unlock` — unlock code verification | registry-api | Medium | Partial |
+| SQLite metadata index (upgrade from file-backed JSON) | None | Medium | Pending |
+| cgp-template with sample patch | cgp-format spec | Small | ✅ Done |
+| cgp-template README and documentation | None | Small | ✅ Done |
+| Registry API spec documenting notary proxy (no file hosting) | — | Small | ✅ Done |
+| `publish-cgp.sh` updated for notary pattern (JSON + sha256 + download-url) | — | Small | ✅ Done |
 
 **Definition of done:**
-- `cpm search email` returns results from the registry
-- `cpm publish ./skill.cgp` uploads to the registry
-- `cpm install <name>` downloads and installs from registry
-- Unlock code flow works end-to-end
-- `cpm init my-skill` creates a valid .cgp skeleton
+- `cpm search email` returns results from the registry ✅
+- `cpm publish ./skill.cgp --download-url <url>` registers checksum in registry ✅
+- `cpm install <name>` downloads from `download_url` after registry redirect ✅
+- Unlock code flow works end-to-end ⬜ (stub implementation)
+- A1-A10 validation rejects malformed publishes at registry level ✅
+- `cpm init my-skill` creates a valid .cgp skeleton ✅
 
 ## Build Order with Milestones
 

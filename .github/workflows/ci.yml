@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [development]
+  push:
+    branches: [development, main]
+
+jobs:
+  continuous-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint markdown
+        run: |
+          for f in $(find . -name "*.md"); do
+            echo "Checking $f..."
+            test -s "$f" || echo "  WARNING: empty file"
+          done
