@@ -151,7 +151,13 @@ check_go_build_cgo() {
     }
   fi
   local ggml_inc="$llama_dir/ggml/include"
-  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" go build -tags=cgo -o /dev/null ./cmd/cograw 2>&1; then
+  local ggml_ld=""
+  for lib in $(find "$llama_dir/build" -name "libggml*.a" -type f); do
+    libname=$(basename "$lib" .a | sed 's/^lib//')
+    ggml_ld="${ggml_ld} -l${libname}"
+  done
+  ggml_ld="${ggml_ld} -lgomp"
+  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" CGO_LDFLAGS="$ggml_ld" go build -tags=cgo -o /dev/null ./cmd/cograw 2>&1; then
     check "cgo build $label" pass
   else
     check "cgo build $label" fail "cgo build error"
@@ -178,7 +184,13 @@ check_go_vet_cgo() {
     return
   fi
   local ggml_inc="$llama_dir/ggml/include"
-  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" go vet -tags=cgo ./... 2>&1; then
+  local ggml_ld=""
+  for lib in $(find "$llama_dir/build" -name "libggml*.a" -type f); do
+    libname=$(basename "$lib" .a | sed 's/^lib//')
+    ggml_ld="${ggml_ld} -l${libname}"
+  done
+  ggml_ld="${ggml_ld} -lgomp"
+  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" CGO_LDFLAGS="$ggml_ld" go vet -tags=cgo ./... 2>&1; then
     check "cgo vet $label" pass
   else
     check "cgo vet $label" fail "cgo vet errors"
