@@ -135,17 +135,17 @@ check_go_build_cgo() {
   local llama_dir="$dir/vendor/llama.cpp"
   if [ ! -f "$llama_dir/CMakeLists.txt" ]; then
     mkdir -p "$dir/vendor"
-    git clone --depth=1 https://github.com/ggerganov/llama.cpp.git "$llama_dir" 2>/dev/null || {
+    git clone --depth=1 https://github.com/ggerganov/llama.cpp.git "$llama_dir" >/dev/null 2>&1 || {
       check "cgo build $label" skip "llama.cpp clone failed"
       return
     }
   fi
   if [ ! -f "$llama_dir/build/libllama.a" ]; then
-    (cd "$llama_dir" && cmake -B build -DLLAMA_NATIVE=0 -DBUILD_SHARED_LIBS=0 \
-      -DLLAMA_BUILD_TESTS=0 -DLLAMA_BUILD_EXAMPLES=0 \
-      -DLLAMA_BUILD_SERVER=0 \
+    (cd "$llama_dir" && cmake -B build -DLLAMA_NATIVE=0 \
+      -DBUILD_SHARED_LIBS=0 -DLLAMA_BUILD_TESTS=0 \
+      -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_SERVER=0 \
       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$PWD/build" && \
-     cmake --build build --target llama --config Release -j"$(nproc)") 2>/dev/null || {
+     cmake --build build --target llama --config Release -j"$(nproc)") >/dev/null 2>&1 || {
       check "cgo build $label" fail "llama.cpp cmake build failed"
       return
     }
@@ -157,7 +157,7 @@ check_go_build_cgo() {
     ggml_ld="${ggml_ld} -l${libname}"
   done
   ggml_ld="${ggml_ld} -lgomp"
-  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" CGO_LDFLAGS="$ggml_ld" go build -tags=cgo -o /dev/null ./cmd/cograw 2>&1; then
+  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" CGO_LDFLAGS="$ggml_ld" go build -tags=cgo -o /dev/null ./cmd/cograw >/dev/null 2>&1; then
     check "cgo build $label" pass
   else
     check "cgo build $label" fail "cgo build error"
@@ -190,7 +190,7 @@ check_go_vet_cgo() {
     ggml_ld="${ggml_ld} -l${libname}"
   done
   ggml_ld="${ggml_ld} -lgomp"
-  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" CGO_LDFLAGS="$ggml_ld" go vet -tags=cgo ./... 2>&1; then
+  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" CGO_LDFLAGS="$ggml_ld" go vet -tags=cgo ./... >/dev/null 2>&1; then
     check "cgo vet $label" pass
   else
     check "cgo vet $label" fail "cgo vet errors"
