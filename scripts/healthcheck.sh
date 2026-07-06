@@ -89,6 +89,8 @@ clone_repo() {
 
 has_go() { command -v go >/dev/null 2>&1; }
 has_shellcheck() { command -v shellcheck >/dev/null 2>&1; }
+has_cmake() { command -v cmake >/dev/null 2>&1; }
+has_gcc() { command -v gcc >/dev/null 2>&1; }
 
 check_go_build() {
   local dir="$1" label="$2"
@@ -113,6 +115,73 @@ check_go_vet() {
     check "go vet $label" pass
   else
     check "go vet $label" fail "vet errors"
+  fi
+}
+
+check_go_build_cgo() {
+  local dir="$1" label="$2"
+  if ! has_go; then
+    check "cgo build $label" skip "go not installed"
+    return
+  fi
+  if ! has_cmake; then
+    check "cgo build $label" skip "cmake not installed"
+    return
+  fi
+  if ! has_gcc; then
+    check "cgo build $label" skip "gcc not installed"
+    return
+  fi
+  local llama_dir="$dir/vendor/llama.cpp"
+  if [ ! -f "$llama_dir/CMakeLists.txt" ]; then
+    mkdir -p "$dir/vendor"
+    git clone --depth=1 https://github.com/ggerganov/llama.cpp.git "$llama_dir" 2>/dev/null || {
+      check "cgo build $label" skip "llama.cpp clone failed"
+      return
+    }
+  fi
+  if [ ! -f "$llama_dir/build/libllama.a" ]; then
+    (cd "$llama_dir" && cmake -B build -DLLAMA_NO_ACCELERATE=1 -DLLAMA_STATIC=1 \
+      -DLLAMA_NATIVE=0 -DBUILD_SHARED_LIBS=0 -DLLAMA_BUILD_TESTS=0 \
+      -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_SERVER=0 \
+      -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$PWD/build" && \
+     cmake --build build --target llama --config Release -j"$(nproc)") 2>/dev/null || {
+      check "cgo build $label" fail "llama.cpp cmake build failed"
+      return
+    }
+  fi
+  local ggml_inc="$llama_dir/ggml/include"
+  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" go build -tags=cgo -o /dev/null ./cmd/cograw 2>&1; then
+    check "cgo build $label" pass
+  else
+    check "cgo build $label" fail "cgo build error"
+  fi
+}
+
+check_go_vet_cgo() {
+  local dir="$1" label="$2"
+  if ! has_go; then
+    check "cgo vet $label" skip "go not installed"
+    return
+  fi
+  if ! has_cmake; then
+    check "cgo vet $label" skip "cmake not installed"
+    return
+  fi
+  if ! has_gcc; then
+    check "cgo vet $label" skip "gcc not installed"
+    return
+  fi
+  local llama_dir="$dir/vendor/llama.cpp"
+  if [ ! -f "$llama_dir/CMakeLists.txt" ] || [ ! -f "$llama_dir/build/libllama.a" ]; then
+    check "cgo vet $label" skip "llama.cpp not built (cgo build step handles this)"
+    return
+  fi
+  local ggml_inc="$llama_dir/ggml/include"
+  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" go vet -tags=cgo ./... 2>&1; then
+    check "cgo vet $label" pass
+  else
+    check "cgo vet $label" fail "cgo vet errors"
   fi
 }
 
@@ -256,7 +325,7 @@ hr
 
 # ── Tool availability ──
 section "Tool Availability"
-for tool in git go shellcheck; do
+for tool in git go shellcheck cmake; do
   if command -v "$tool" >/dev/null 2>&1; then
     ver=$("$tool" version 2>&1 | head -1)
     check "$tool" pass "$ver"
@@ -329,6 +398,8 @@ for repo in $ALL_REPOS; do
     *" $repo "*)
       check_build_tags "$dir" "$repo"
       check_stale_refs "$dir" "$repo"
+      check_go_build_cgo "$dir" "$repo"
+      check_go_vet_cgo "$dir" "$repo"
       ;;
   esac
 
