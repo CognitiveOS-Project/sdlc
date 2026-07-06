@@ -49,11 +49,10 @@ EOF
 
 check() {
   local name="$1" status="$2" detail="$3"
-  local tag=""
   case "$status" in
-    pass) tag="PASS"; pass=$((pass+1)) ;;
-    fail) tag="FAIL"; fail=$((fail+1)) ;;
-    skip) tag="SKIP"; skip=$((skip+1)) ;;
+    pass) pass=$((pass+1)) ;;
+    fail) fail=$((fail+1)) ;;
+    skip) skip=$((skip+1)) ;;
   esac
   if [ "$MODE_QUIET" -eq 0 ]; then
     case "$status" in
@@ -96,7 +95,7 @@ check_go_build() {
     check "go build $label" skip "go not installed"
     return
   fi
-  if CGO_ENABLED=0 go build -o /dev/null ./... 2>&1; then
+  if (cd "$dir" && CGO_ENABLED=0 go build -o /dev/null ./... 2>&1); then
     check "go build $label" pass
   else
     check "go build $label" fail "build error"
@@ -109,7 +108,7 @@ check_go_vet() {
     check "go vet $label" skip "go not installed"
     return
   fi
-  if go vet ./... 2>&1; then
+  if (cd "$dir" && go vet ./... 2>&1); then
     check "go vet $label" pass
   else
     check "go vet $label" fail "vet errors"
@@ -139,7 +138,7 @@ check_shellcheck() {
   local errors=0
   for script in "$dir"/scripts/*.sh; do
     [ -f "$script" ] || continue
-    shellcheck -s sh -S warning "$script" 2>/dev/null || errors=$((errors+1))
+    shellcheck -S warning "$script" 2>/dev/null || errors=$((errors+1))
   done
   if [ "$errors" -eq 0 ]; then
     check "shellcheck $label" pass
@@ -156,11 +155,12 @@ check_build_tags() {
     [ -f "$p" ] || continue
     head -1 "$p" | grep -q 'cgo' || { errors=$((errors+1)); check "build tag cgo on $f ($label)" fail "missing //go:build cgo"; }
   done
-  for f in cograw_llm.go; do
-    p="$dir/cmd/cograw/$f"
-    [ -f "$p" ] || continue
-    head -1 "$p" | grep -q 'cgo' || { errors=$((errors+1)); check "build tag cgo on $f ($label)" fail "missing //go:build cgo"; }
-  done
+  f="cograw_llm.go"
+  p="$dir/cmd/cograw/$f"
+  if [ -f "$p" ] && ! head -1 "$p" | grep -q 'cgo'; then
+    errors=$((errors+1))
+    check "build tag cgo on $f ($label)" fail "missing //go:build cgo"
+  fi
   for f in cograw_stub.go backend_stub.go; do
     for d in cmd/cograw internal/server; do
       p="$dir/$d/$f"
