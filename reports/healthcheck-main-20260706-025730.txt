@@ -1,0 +1,126 @@
+
+[1m── CognitiveOS Health Check ──[0m
+Branch: main
+Tag:    v0.4.0
+Date:   Mon Jul  6 02:57:30 UTC 2026
+Host:   Linux 4011895967fd 6.12.76-linuxkit #1 SMP PREEMPT_DYNAMIC Fri May 29 10:02:54 UTC 2026 x86_64 Linux
+----------------------------------------
+
+[1m── Tool Availability ──[0m
+  [PASS] git — git version 2.54.0
+  [PASS] go — go version go1.26.3 linux/amd64
+  [PASS] shellcheck — version: version: openBinaryFile: does not exist (No such file or directory)
+  [PASS] cmake — CMake Error: The source directory "/workspace/sdlc/version" does not exist.
+----------------------------------------
+
+[1m── Repository Checkout ──[0m
+  [PASS] clone cognitiveos
+  [PASS] clone product-specs
+  [PASS] clone sdlc
+  [PASS] clone cpm
+  [PASS] clone core-mcp-bridges
+  [PASS] clone inference
+  [PASS] clone cognitiveosd
+  [PASS] clone cli
+  [PASS] clone cognitiveos-distro
+  [PASS] clone registry-server
+  [PASS] clone cgp-template
+----------------------------------------
+
+[1m── cognitiveos ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [PASS] Dockerfile FROM (cognitiveos)
+  [PASS] Dockerfile SSH (cognitiveos)
+
+[1m── product-specs ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [[1;33mSKIP[0m] Dockerfile (product-specs) — not found
+
+[1m── sdlc ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [PASS] sh -n scripts/ sdlc
+  [PASS] shellcheck sdlc
+  [[1;33mSKIP[0m] Dockerfile (sdlc) — not found
+
+[1m── cpm ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [PASS] go build cpm
+  [PASS] go vet cpm
+  [[1;33mSKIP[0m] Dockerfile (cpm) — not found
+
+[1m── core-mcp-bridges ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [PASS] go build core-mcp-bridges
+  [PASS] go vet core-mcp-bridges
+  [[1;33mSKIP[0m] Dockerfile (core-mcp-bridges) — not found
+
+[1m── inference ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [PASS] go build inference
+  [PASS] go vet inference
+  [PASS] build tags (inference)
+  [PASS] stale refs (inference)
+  [[0;31mFAIL[0m] cgo build inference — cgo build error
+  [[0;31mFAIL[0m] cgo vet inference — cgo vet errors
+  [[1;33mSKIP[0m] Dockerfile (inference) — not found
+
+[1m── cognitiveosd ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [PASS] go build cognitiveosd
+  [PASS] go vet cognitiveosd
+  [[1;33mSKIP[0m] Dockerfile (cognitiveosd) — not found
+
+[1m── cli ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [PASS] go build cli
+  [PASS] go vet cli
+  [[1;33mSKIP[0m] Dockerfile (cli) — not found
+
+[1m── cognitiveos-distro ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [PASS] sh -n scripts/ cognitiveos-distro
+  [PASS] shellcheck cognitiveos-distro
+  [PASS] Dockerfile FROM (cognitiveos-distro)
+  [PASS] Dockerfile SSH (cognitiveos-distro)
+  [PASS] CGO_ENABLED=1 (cognitiveos-distro)
+  [PASS] cograw target (cognitiveos-distro)
+
+[1m── registry-server ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [PASS] go build registry-server
+  [PASS] go vet registry-server
+  [[1;33mSKIP[0m] Dockerfile (registry-server) — not found
+
+[1m── cgp-template ──[0m
+  [PASS] git status clean
+  [PASS] on branch main
+  [PASS] tag v0.4.0
+  [[1;33mSKIP[0m] Dockerfile (cgp-template) — not found
+----------------------------------------
+
+[1mSummary[0m
+  Pass: [0;32m72[0m
+  Fail: [0;31m2[0m
+  Skip: [1;33m9[0m
+  Total: 83
+

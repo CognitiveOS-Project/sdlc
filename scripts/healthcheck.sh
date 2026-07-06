@@ -141,9 +141,9 @@ check_go_build_cgo() {
     }
   fi
   if [ ! -f "$llama_dir/build/libllama.a" ]; then
-    (cd "$llama_dir" && cmake -B build -DLLAMA_NO_ACCELERATE=1 -DLLAMA_STATIC=1 \
-      -DLLAMA_NATIVE=0 -DBUILD_SHARED_LIBS=0 -DLLAMA_BUILD_TESTS=0 \
-      -DLLAMA_BUILD_EXAMPLES=0 -DLLAMA_BUILD_SERVER=0 \
+    (cd "$llama_dir" && cmake -B build -DLLAMA_NATIVE=0 -DBUILD_SHARED_LIBS=0 \
+      -DLLAMA_BUILD_TESTS=0 -DLLAMA_BUILD_EXAMPLES=0 \
+      -DLLAMA_BUILD_SERVER=0 \
       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$PWD/build" && \
      cmake --build build --target llama --config Release -j"$(nproc)") 2>/dev/null || {
       check "cgo build $label" fail "llama.cpp cmake build failed"
@@ -339,7 +339,10 @@ hr
 section "Tool Availability"
 for tool in git go shellcheck cmake; do
   if command -v "$tool" >/dev/null 2>&1; then
-    ver=$("$tool" version 2>&1 | head -1)
+    case "$tool" in
+      cmake) ver=$(cmake --version 2>&1 | head -1) ;;
+      *)     ver=$("$tool" version 2>&1 | head -1) ;;
+    esac
     check "$tool" pass "$ver"
   else
     check "$tool" skip "not installed"
