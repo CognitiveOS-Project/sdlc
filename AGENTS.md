@@ -15,6 +15,6 @@ This repo defines **how we build** CognitiveOS. It is the process layer above th
 ## Rules
 
 - All repos follow the git workflow defined in root `.opencode/instructions/git-workflow.md`
-- Branch from `development`, PR to `development`, no rebase
+- Branch from `main`, PR to `main`, no rebase
 - Commit types: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
 - Go code must pass `gofmt -s` and `go vet`

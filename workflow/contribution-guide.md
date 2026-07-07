@@ -13,14 +13,14 @@ All repos follow the same workflow:
 
 ```bash
 git fetch origin
-git checkout -b feature/<short-description> development
+git checkout -b feature/<short-description> main
 # make changes
 git add .
 git commit -m "<type>: <description>"
 git push -u origin HEAD
 ```
 
-Create a PR into `development`. See the root `AGENTS.md` and `.opencode/instructions/git-workflow.md` in the workspace root for full details.
+Create a PR into `main`. See the root `AGENTS.md` and `.opencode/instructions/git-workflow.md` in the workspace root for full details.
 
 Commit types:
 - `feat:` — New feature
@@ -54,7 +54,7 @@ Commit types:
 2. Description: What, why, how. Reference the spec section if applicable.
 3. Ensure all checks pass (lint, test)
 4. Request review from a maintainer
-5. Squash merge to `development`
+5. Squash merge to `main`
 
 ## Testing
 

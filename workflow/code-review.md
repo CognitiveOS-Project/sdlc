@@ -40,7 +40,7 @@ Every PR must pass these checks before merging:
 3. **Reviewer** leaves comments inline or approves
 4. **Author** addresses feedback or explains why it's not needed
 5. **Reviewer** approves
-6. **Author** merges (squash merge to `development`)
+6. **Author** merges (squash merge to `main`)
 
 ### Time Expectations
 

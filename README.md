@@ -32,7 +32,7 @@ Read the guides in `workflow/` before submitting changes:
 - [`workflow/testing.md`](workflow/testing.md) — testing strategy across all layers
 - [`workflow/ci-cd.md`](workflow/ci-cd.md) — CI/CD pipeline definitions
 
-All repos in the CognitiveOS project follow topic-branch flow: branch from `development`, PR to `development`, squash merge, then release PR to `main`.
+All repos in the CognitiveOS project work directly on `main`: branch from `main`, PR to `main`, merge after review.
 
 ## Author
 
