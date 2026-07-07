@@ -157,7 +157,7 @@ check_go_build_cgo() {
     ggml_ld="${ggml_ld} -l${libname}"
   done
   ggml_ld="${ggml_ld} -lgomp"
-  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" CGO_LDFLAGS="$ggml_ld" go build -tags=cgo -o /dev/null ./cmd/cograw >/dev/null 2>&1; then
+  if (cd "$dir" && CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" CGO_LDFLAGS="$ggml_ld" go build -tags=cgo -o /dev/null ./cmd/cograw >/dev/null 2>&1); then
     check "cgo build $label" pass
   else
     check "cgo build $label" fail "cgo build error"
@@ -190,7 +190,7 @@ check_go_vet_cgo() {
     ggml_ld="${ggml_ld} -l${libname}"
   done
   ggml_ld="${ggml_ld} -lgomp"
-  if CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" CGO_LDFLAGS="$ggml_ld" go vet -tags=cgo ./... >/dev/null 2>&1; then
+  if (cd "$dir" && CGO_ENABLED=1 CGO_CFLAGS="-I$ggml_inc" CGO_LDFLAGS="$ggml_ld" go vet -tags=cgo ./... >/dev/null 2>&1); then
     check "cgo vet $label" pass
   else
     check "cgo vet $label" fail "cgo vet errors"
