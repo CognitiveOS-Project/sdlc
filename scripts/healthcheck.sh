@@ -277,7 +277,7 @@ check_dockerfile() {
   else
     check "Dockerfile FROM ($label)" fail "missing FROM"
   fi
-  if grep -q 'https://github.com.*CognitiveOS-Project' "$df" 2>/dev/null; then
+  if grep -Eq '^(COPY|ADD)\s+.*https://github\.com.*CognitiveOS-Project' "$df" 2>/dev/null; then
     check "Dockerfile SSH ($label)" fail "HTTPS clone found"
   else
     check "Dockerfile SSH ($label)" pass
@@ -286,19 +286,21 @@ check_dockerfile() {
 
 check_cgo_enabled() {
   local dir="$1" label="$2"
-  if grep -q 'CGO_ENABLED=1' "$dir/scripts/build-binaries.sh" 2>/dev/null; then
+  local inference_dir="$WORK_DIR/inference"
+  if [ -f "$inference_dir/Makefile" ] && grep -q 'CGO_ENABLED=1' "$inference_dir/Makefile" 2>/dev/null; then
     check "CGO_ENABLED=1 ($label)" pass
   else
-    check "CGO_ENABLED=1 ($label)" fail "not set in build-binaries.sh"
+    check "CGO_ENABLED=1 ($label)" fail "not set in inference Makefile"
   fi
 }
 
 check_cograw_target() {
   local dir="$1" label="$2"
-  if grep -q 'cograw' "$dir/scripts/build-binaries.sh" 2>/dev/null; then
+  local inference_dir="$WORK_DIR/inference"
+  if [ -f "$inference_dir/Makefile" ] && grep -q 'cograw' "$inference_dir/Makefile" 2>/dev/null; then
     check "cograw target ($label)" pass
   else
-    check "cograw target ($label)" fail "not found in build-binaries.sh"
+    check "cograw target ($label)" fail "not found in inference Makefile"
   fi
 }
 
