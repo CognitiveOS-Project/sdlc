@@ -84,7 +84,7 @@
 - [x] Hardware audit runs on interval
 - [ ] **Demo:** End-to-end: "Show me photo" → AI calls display-mcp → photo appears
 
-## M4b — Daemon Spec Compliance
+## M4b — Daemon Spec Compliance ✅ COMPLETE
 - [x] **4b.1:** Bridge error format: MCP Invoke handles `isError:true` in result (Phase 2b compatibility)
 - [x] **4b.1:** UUID v4 generation for message envelope IDs
 - [x] **4b.1:** Shutdown stops accepting new messages (`E_SHUTDOWN` guard)
@@ -96,7 +96,29 @@
 - [ ] **4b.2:** Resource negotiation flow (negotiate message type, resource freeing)
 - [ ] **4b.2:** Per-patch MCP server spawning from `runtime.mcp_servers` in manifests
 
-## M5 — Bootable ISO
+## M5 — Bootable ISO (Basic UI) ✅ COMPLETE
+- [x] CLI boots on tty1 via inittab
+- [x] Connects to cognitiveosd and shows "ready"
+- [x] Typing a command → AI responds → output displayed
+- [x] 7 screen states: idle, listening, processing, responding, media, error, code entry
+- [x] Keybindings: Enter, Esc, Ctrl+C, Ctrl+L, Up/Down history, Tab, /
+- [x] Input history navigation
+- [x] Socket connection with retry (30s) and "Daemon unavailable" state
+- [x] Code entry mode with masked input
+
+## M5b — CLI Spec Compliance
+- [x] **5b.1:** Ctrl+D sends `system_code idle` (with confirmation prompt)
+- [x] **5b.1:** Ctrl+Alt+S sends `system_code security` (immediate, any state)
+- [x] **5b.1:** Processing spinner uses dots per spec (`.`, `..`, `...`)
+- [x] **5b.1:** Processing cancel sends cancellation to daemon
+- [x] **5b.1:** Output rendering: code blocks (monospace+highlight), lists (bullets), URLs (underlined)
+- [x] **5b.1:** Media mode — `output_deliver` with `content_type:media` transitions to overlay state
+- [x] **5b.2:** History navigation in responding mode (Up/Down)
+- [ ] **5b.2:** Voice input waveform animation
+- [ ] **5b.2:** Shift+Up/Down scrolling for long output
+- [ ] **5b.2:** Tab action button cycling in responding mode
+
+## M6 — Registry Ecosystem (Notary Proxy)
 - [ ] `make iso` produces bootable x86_64 ISO
 - [ ] `make rpi` produces Raspberry Pi SD card image
 - [ ] Boot on QEMU → CLI appears → "CognitiveOS ready"

@@ -291,6 +291,25 @@ All six bridges (display, audio, network, gpio, serial, package) are implemented
 - Voice input captures and processes speech
 - CLI crash → respawned automatically
 
+### Phase 5b: CLI Spec Compliance
+
+**Repos:** `cli`
+
+**Goal:** Bring the CLI into full compliance with `cli-spec.md`.
+
+| Task | Dependencies | Est. effort | Status |
+|------|-------------|-------------|--------|
+| Ctrl+D sends `system_code idle` (shutdown confirmation) | cli-spec | Small | ✅ Done |
+| Ctrl+Alt+S sends `system_code security` (immediate, any state) | cli-spec | Small | ✅ Done |
+| Spinner uses dots cycling (`.`, `..`, `...`) per spec | cli-spec | Small | ✅ Done |
+| Processing cancel sends cancellation to daemon | cli-spec | Small | ✅ Done |
+| Output rendering: code blocks, lists, tables, URLs | cli-spec | Medium | ✅ Done |
+| Media mode — `content_type:media` transitions to overlay state | cli-spec | Medium | ✅ Done |
+| History navigation in responding mode (Up/Down) | cli-spec | Small | ✅ Done |
+| Voice input waveform animation | cli-spec | Medium | Pending |
+| Shift+Up/Down scrolling for long output | cli-spec | Medium | Pending |
+| Tab action button cycling in responding mode | cli-spec | Medium | Pending |
+
 ### Phase 6: Distribution Image
 
 **Repos:** `cognitiveos-distro`
@@ -395,9 +414,12 @@ M3  ─── Raw Model loads and responds                (Phase 3)
 M4  ─── cognitiveosd runs all components            (Phase 4)
   │      CLI ↔ Daemon ↔ Wide Model ↔ MCP tools
   │
-M5  ─── Bootable CognitiveOS ISO on QEMU            (Phase 5+6)
-  │      "Start device → ask AI → AI does"
-  │
+M5  ─── CLI boots, connects, sends/receives         (Phase 5)
+      │      "Start device → ask AI → AI does"
+      │
+M5b ─── CLI spec compliance                         (Phase 5b)
+      │      Ctrl+D/S, spinner dots, media mode, output formatting
+      │
 M6  ─── Registry online, cpm install from it        (Phase 7)
   │
 M7  ─── v0.1.0 release                             (ALL PHASES)
