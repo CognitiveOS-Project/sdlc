@@ -118,14 +118,14 @@
 - [ ] **5b.2:** Shift+Up/Down scrolling for long output
 - [ ] **5b.2:** Tab action button cycling in responding mode
 
-## M6 — Registry Ecosystem (Notary Proxy)
+## M6 — Distribution Image
 - [ ] `make iso` produces bootable x86_64 ISO
 - [ ] `make rpi` produces Raspberry Pi SD card image
 - [ ] Boot on QEMU → CLI appears → "CognitiveOS ready"
 - [ ] Raw Model loads at boot
 - [ ] **Demo:** Boot CognitiveOS in QEMU, type a command, get a response
 
-## M6 — Registry Ecosystem (Notary Proxy)
+## M7 — Registry Ecosystem (Notary Proxy)
 - [x] `GET /v1/search` returns results
 - [x] `GET /v1/patches/{name}/{version}` returns metadata with sha256 + download_url
 - [x] `GET /v1/patches/{name}/{version}/download` redirects to canonical download URL
@@ -142,7 +142,7 @@
 - [ ] Full unlock code flow end-to-end
 - [ ] **Demo:** `cpm search photo` → `cpm install photo-viewer` → AI can show photos
 
-## M7 — v0.1.0 Release
+## M8 — v0.1.0 Release
 - [ ] All repos tagged `v0.1.0`
 - [ ] Bootable ISO published to GitHub Releases
 - [ ] RPi image published

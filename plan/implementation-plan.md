@@ -316,16 +316,22 @@ All six bridges (display, audio, network, gpio, serial, package) are implemented
 
 **Goal:** Bootable Alpine Linux image with all CognitiveOS components baked in.
 
-| Task | Dependencies | Est. effort |
-|------|-------------|-------------|
-| Overlay assembly script | All above binaries compiled | Medium |
-| Alpine mkimage ISO generation | distro-build-spec | Medium |
-| Alpine mkimage RPi SD card generation | distro-build-spec | Medium |
-| Custom inittab integration | None | Small |
-| First-boot setup automation | None | Small |
-| Docker-based cross-compilation environment | None | Medium |
-| Makefile with iso/rpi/clean targets | None | Small |
-| Image signing and checksum generation | None | Small |
+| Task | Dependencies | Est. effort | Status |
+|------|-------------|-------------|--------|
+| Overlay assembly script | All above binaries compiled | Medium | ✅ Done |
+| Alpine mkimage ISO generation | distro-build-spec | Medium | ✅ Done |
+| Alpine mkimage RPi SD card generation | distro-build-spec | Medium | ✅ Done |
+| Custom inittab integration | None | Small | ✅ Done |
+| First-boot setup automation | None | Small | ✅ Done |
+| Docker-based cross-compilation environment | None | Medium | ✅ Done |
+| Makefile with iso/rpi/clean targets | None | Small | ✅ Done |
+| Image signing and checksum generation | None | Small | ✅ Done |
+| Binary naming — repo-owned (coginfer, bridges/) | inference, core-mcp-bridges | Small | ✅ Done |
+| `cpm download-weights` picks smallest by size | cpm | Small | ✅ Done |
+| Alpine packages: fbv, fbi, gpiod-tools | None | Small | ✅ Done |
+| VERSION file + spec image naming | None | Small | ✅ Done |
+| Overlay models/ dirs + image-manifest.json | None | Small | ✅ Done |
+| Model download step in build-overlay.sh | cpm download-weights | Small | ✅ Done |
 
 **Definition of done:**
 - `make iso` produces a bootable CognitiveOS ISO
@@ -420,9 +426,12 @@ M5  ─── CLI boots, connects, sends/receives         (Phase 5)
 M5b ─── CLI spec compliance                         (Phase 5b)
       │      Ctrl+D/S, spinner dots, media mode, output formatting
       │
-M6  ─── Registry online, cpm install from it        (Phase 7)
+M6  ─── Distribution image builds                   (Phase 6)
+      │      make iso, make rpi, boot to CLI
+      │
+M7  ─── Registry online, cpm install from it        (Phase 7)
   │
-M7  ─── v0.1.0 release                             (ALL PHASES)
+M8  ─── v0.1.0 release                             (ALL PHASES)
 ```
 
 ## Risk Register
