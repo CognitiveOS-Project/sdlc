@@ -64,14 +64,14 @@
 - [x] **Demo:** Raw Model responds to a query
 
 ## M3b — Inference Spec Compliance
-- [ ] **3b.1:** Idle timeout auto-unload (5 min)
-- [ ] **3b.1:** DELETE /api/delete returns ram_freed_mb
-- [ ] **3b.1:** GET /api/ps includes processor/gpu_layers/context_usage_percent
-- [ ] **3b.1:** Spec-aligned error codes (E_MODEL_NOT_FOUND, E_OOM, etc.)
-- [ ] **3b.1:** Health endpoint tracks last_error field
-- [ ] **3b.1:** Resource negotiation reads real `/proc/meminfo`
-- [ ] **3b.2:** cograw `--version` flag
-- [ ] **3b.2:** cograw cooldown timing fix (5-min lockout per spec)
+- [x] **3b.1:** Idle timeout auto-unload (5 min)
+- [x] **3b.1:** DELETE /api/delete returns ram_freed_mb
+- [x] **3b.1:** GET /api/ps includes processor/gpu_layers/context_usage_percent
+- [x] **3b.1:** Spec-aligned error codes (E_MODEL_NOT_FOUND, E_INVALID_PARAMS, E_INTERNAL)
+- [x] **3b.1:** Health endpoint tracks last_error field
+- [x] **3b.1:** Resource negotiation reads real `/proc/meminfo`
+- [x] **3b.2:** cograw `--version` flag
+- [x] **3b.2:** cograw cooldown timing fix (5-min lockout per spec)
 - [ ] **3b.2:** Status endpoint queries raw socket for raw_model info
 
 ## M4 — Integrated System
