@@ -53,13 +53,26 @@
 - [ ] **2b.2:** Logging to `/cognitiveos/logs/bridges/<name>.log`
 - [ ] **2b.2:** Resource cost annotations on tools
 
-## M3 — Inference Engine
-- [ ] `POST /api/generate` produces completions from Raw Model
-- [ ] `GET /cognitiveos/status` reports resource usage
-- [ ] Resource negotiation with cognitiveosd
-- [ ] Idle timeout unloads model automatically
-- [ ] Model swap works (unload A, load B)
-- [ ] **Demo:** Raw Model responds to a query
+## M3 — Inference Engine ✅ COMPLETE
+- [x] `POST /api/generate` produces completions from Raw Model
+- [x] `GET /cognitiveos/status` reports resource usage
+- [x] Resource negotiation with cognitiveosd
+- [x] CGo-backed bridge to vendored llama.cpp
+- [x] Ollama-compatible subset (generate, chat, tags, pull, ps, delete)
+- [x] Cograw JSON-RPC 2.0 server (validate_code, unlock, audit, health, version, validate_prompt, validate_package)
+- [x] RSA unlock code verification with cooldown
+- [x] **Demo:** Raw Model responds to a query
+
+## M3b — Inference Spec Compliance
+- [ ] **3b.1:** Idle timeout auto-unload (5 min)
+- [ ] **3b.1:** DELETE /api/delete returns ram_freed_mb
+- [ ] **3b.1:** GET /api/ps includes processor/gpu_layers/context_usage_percent
+- [ ] **3b.1:** Spec-aligned error codes (E_MODEL_NOT_FOUND, E_OOM, etc.)
+- [ ] **3b.1:** Health endpoint tracks last_error field
+- [ ] **3b.1:** Resource negotiation reads real `/proc/meminfo`
+- [ ] **3b.2:** cograw `--version` flag
+- [ ] **3b.2:** cograw cooldown timing fix (5-min lockout per spec)
+- [ ] **3b.2:** Status endpoint queries raw socket for raw_model info
 
 ## M4 — Integrated System
 - [ ] cognitiveosd runs as PID 1 or supervised daemon
