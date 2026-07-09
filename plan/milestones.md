@@ -5,12 +5,32 @@
 - [x] All 10 CognitiveOS-Project repos created on GitHub
 - [x] Implementation plan documented
 
-## M1 — Core Package Manager
-- [ ] `cpm install` works for local .cgp files
-- [ ] `cpm list`, `cpm info`, `cpm remove` functional
-- [ ] `cpm verify` validates archives against cognitive schema
-- [ ] Hardware audit rejects oversized patches
-- [ ] **Demo:** `cpm install ./sample.cgp` on Alpine Linux
+## M1 — Core Package Manager (Initial) ✅ COMPLETE
+- [x] `cpm install` works for local .cgp files
+- [x] `cpm list`, `cpm info`, `cpm remove` functional
+- [x] `cpm verify` validates archives against cognitive schema
+- [x] Hardware audit rejects oversized patches
+- [x] `cpm init` creates skeleton, `cpm init --template gguf-model` for model publishers
+- [x] `cpm search` queries registry, `cpm publish` registers checksums
+- [x] `cpm download-weights` downloads from HuggingFace Hub
+- [x] Universal Protocol Router: 7 protocol handlers (local, registry, npm, bun, deno, git, ghr, URL)
+- [x] **Demo:** `cpm install ./sample.cgp` on Alpine Linux
+
+## M1b — CPM Spec Compliance
+- [ ] **1b.1:** Dependency resolution during install (recursive transitive deps)
+- [ ] **1b.1:** Notary checksum verification on install (verify SHA-256 against registry record)
+- [ ] **1b.1:** Search filters (`--license`, `--min-ram`) passed to registry API
+- [ ] **1b.2:** Registry client endpoints: `GetVersions`, `GetDependencies`, `Unlock`
+- [ ] **1b.2:** Registry download follows 302 redirect (notary proxy)
+- [ ] **1b.2:** Version status awareness (reject deprecated/buggy; show in list/info)
+- [ ] **1b.3:** Standardized `ERROR:<code>:<message>` error format
+- [ ] **1b.3:** `--yes` flag for confirmation prompts
+- [ ] **1b.3:** `cpm update` uses universal resolver (not just registry)
+- [ ] **1b.3:** Search `--capability`, `--exact` filters
+- [ ] **1b.4:** Init templates (prompt-only, mcp-bridge, firmware, full)
+- [ ] **1b.4:** `info` shows source, checksum, registry status
+- [ ] **1b.4:** `verify` checks referenced dependencies
+- [ ] **1b.4:** `publish --scope` and `--visibility`
 
 ## M2 — Hardware Bridges
 - [ ] display-mcp renders images to framebuffer

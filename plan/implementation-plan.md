@@ -73,38 +73,49 @@ cognitiveos-distro ───── depends on all built binaries
 | MCP bridge schemas (×5) | ✅ `schemas/*-mcp.json` |
 | Implementation plan | ➡️ This document |
 
-### Phase 1: Core Package Manager
+### Phase 1: Core Package Manager — Initial Implementation ✅ COMPLETE
 
 **Repos:** `cpm`
 
-**Goal:** Working `cpm` CLI that can install, remove, list, and verify .cgp archives.
+All tasks in the initial Phase 1 are implemented and merged to `main`. The CPM CLI supports `init`, `install` (7 protocol handlers: local, registry, npm, bun, deno, git, ghr, URL), `remove`, `list`, `info`, `verify`, `search`, `update`, `publish`, and `download-weights`.
 
-| Task | Dependencies | Est. effort |
-|------|-------------|-------------|
-| `cpm init` — .cgp skeleton generator | None | Small |
-| `cpm install` — local .cgp file extraction to `/cognitiveos/patches/` | None | Medium |
-| `cpm install` — registry resolution (HTTP client to registry-server API) | registry-api spec | Medium |
-| `cpm remove` — delete patch directory | None | Small |
-| `cpm list` — enumerate installed patches | None | Small |
-| `cpm info` — display manifest | None | Small |
-| `cpm verify` — checksum and schema validation | cognitive.schema.json | Small |
-| Hardware audit integration (read /proc/meminfo, statfs) | filesystem-hierarchy spec | Medium |
-| Dependency resolution | None | Medium |
-| `cpm search` — registry search client | registry-api spec | Small |
-| `cpm download-weights` — standalone weight download from HF Hub | manifest-fields spec | Medium |
-| `cpm install` — auto-download weights when manifest declares `weights.remote.source` | manifest-fields spec | Medium |
-| `cpm init --template gguf-model` — template for model publishers | manifest-fields spec | Small |
+### Phase 1b: CPM Gaps — Spec Compliance & Integration
 
-**Definition of done:**
-- `cpm install ./sample.cgp` works on Alpine Linux
-- `cpm list` shows installed patches
-- `cpm verify` catches malformed archives
-- Hardware audit rejects install on low-RAM device
-- All operations logged to `/cognitiveos/logs/cpm.log`
-- `cpm download-weights --provider hf --kind wide --type gguf <name>` downloads and places model at `/cognitiveos/models/wide/active/`
-- `cpm install` on a `.cgp` with `weights.remote` auto-downloads the model before hardware audit
-- `cpm init --template gguf-model` scaffolds a model-publisher manifest with `weights.remote` block
-- No auth required for public HF models
+**Goal:** Close gaps between the cpm-spec.md, dependency-validation.md, registry-api.md specs and the implementation. Four sub-phases:
+
+#### Phase 1b.1 — Core Install Completeness
+
+| Gap | Task | Est. effort |
+|-----|------|-------------|
+| Dependency resolution | Recursively install transitive `dependencies` during `cpm install` using `dep.Resolve()` | Medium |
+| Notary checksum verification | Before install, fetch registry metadata to get recorded SHA-256, verify downloaded archive against it | Medium |
+| Search filters pass-through | Pass `--license`, `--min-ram` flags to registry `Search` API; update `registry.Client.Search()` signature | Small |
+
+#### Phase 1b.2 — Registry Protocol Completeness
+
+| Gap | Task | Est. effort |
+|-----|------|-------------|
+| Missing registry endpoints | Add `GetVersions(name)`, `GetDependencies(name)`, `Unlock(name, version, code)` to registry client | Medium |
+| 302 redirect handling | `Download()` should follow HTTP 302 to canonical URL (notary proxy pattern) | Small |
+| Version status awareness | Check `active/deprecated/buggy` status before install (reject deprecated/buggy); show in `list`/`info` | Medium |
+
+#### Phase 1b.3 — Polish & Conformance
+
+| Gap | Task | Est. effort |
+|-----|------|-------------|
+| Error format | Standardized `ERROR:<code>:<message>` error output across all commands | Small |
+| `--yes` flag | Implement confirmation prompts for destructive ops; `--yes` skips them | Small |
+| Update via resolver | `cpm update` should use the universal resolver, not just registry (handle git/npm/deno sources) | Medium |
+| Search `--capability` / `--exact` | Additional search filters from spec | Small |
+
+#### Phase 1b.4 — Feature Completeness
+
+| Gap | Task | Est. effort |
+|-----|------|-------------|
+| Init templates | Add `prompt-only`, `mcp-bridge`, `firmware`, `full` templates to `cpm init --template` | Medium |
+| `info` enhancements | Show source URL, checksum, registry status, dependency tree | Small |
+| `verify` dependency check | Verify referenced dependencies exist in archive | Small |
+| `publish --scope` / `--visibility` | Support scoped packages and visibility flags | Small |
 
 ### Phase 2: Hardware Bridges
 
