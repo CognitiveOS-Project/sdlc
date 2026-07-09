@@ -16,29 +16,42 @@
 - [x] Universal Protocol Router: 7 protocol handlers (local, registry, npm, bun, deno, git, ghr, URL)
 - [x] **Demo:** `cpm install ./sample.cgp` on Alpine Linux
 
-## M1b — CPM Spec Compliance
-- [ ] **1b.1:** Dependency resolution during install (recursive transitive deps)
-- [ ] **1b.1:** Notary checksum verification on install (verify SHA-256 against registry record)
-- [ ] **1b.1:** Search filters (`--license`, `--min-ram`) passed to registry API
-- [ ] **1b.2:** Registry client endpoints: `GetVersions`, `GetDependencies`, `Unlock`
-- [ ] **1b.2:** Registry download follows 302 redirect (notary proxy)
-- [ ] **1b.2:** Version status awareness (reject deprecated/buggy; show in list/info)
-- [ ] **1b.3:** Standardized `ERROR:<code>:<message>` error format
-- [ ] **1b.3:** `--yes` flag for confirmation prompts
-- [ ] **1b.3:** `cpm update` uses universal resolver (not just registry)
-- [ ] **1b.3:** Search `--capability`, `--exact` filters
-- [ ] **1b.4:** Init templates (prompt-only, mcp-bridge, firmware, full)
-- [ ] **1b.4:** `info` shows source, checksum, registry status
-- [ ] **1b.4:** `verify` checks referenced dependencies
-- [ ] **1b.4:** `publish --scope` and `--visibility`
+## M1b — CPM Spec Compliance ✅ COMPLETE
+- [x] **1b.1:** Dependency resolution during install (recursive transitive deps)
+- [x] **1b.1:** Notary checksum verification on install (verify SHA-256 against registry record)
+- [x] **1b.1:** Search filters (`--license`, `--min-ram`) passed to registry API
+- [x] **1b.2:** Registry client endpoints: `GetVersions`, `GetDependencies`, `Unlock`
+- [x] **1b.2:** Registry download follows 302 redirect (notary proxy)
+- [x] **1b.2:** Version status awareness (reject deprecated/buggy; show in list/info)
+- [x] **1b.3:** Standardized `ERROR:<code>:<message>` error format
+- [x] **1b.3:** `--yes` flag for confirmation prompts
+- [x] **1b.3:** `cpm update` uses universal resolver (not just registry)
+- [x] **1b.3:** Search `--capability`, `--exact` filters
+- [x] **1b.4:** Init templates (prompt-only, mcp-bridge, firmware, full)
+- [x] **1b.4:** `info` shows source, checksum, registry status
+- [x] **1b.4:** `verify` checks referenced dependencies
+- [x] **1b.4:** `publish --scope` and `--visibility`
 
-## M2 — Hardware Bridges
-- [ ] display-mcp renders images to framebuffer
-- [ ] audio-mcp plays audio and captures microphone
-- [ ] network-mcp scans and connects to Wi-Fi
-- [ ] gpio-mcp reads and writes pins
-- [ ] serial-mcp sends and receives over UART
-- [ ] **Demo:** "Show me photo.jpg" → image appears on screen
+## M2 — Hardware Bridges ✅ COMPLETE
+- [x] display-mcp renders images to framebuffer
+- [x] audio-mcp plays audio and captures microphone
+- [x] network-mcp scans and connects to Wi-Fi
+- [x] gpio-mcp reads and writes pins
+- [x] serial-mcp sends and receives over UART
+- [x] package-mcp wraps cpm for AI-initiated package management
+- [x] Shared MCP JSON-RPC 2.0 framework in internal/mcp
+- [x] **Demo:** "Show me photo.jpg" → image appears on screen
+
+## M2b — Bridge Spec Compliance
+- [ ] **2b.1:** Error envelope format (`ERROR:<CODE>:<message>` across all bridges)
+- [ ] **2b.1:** `outputSchema` in tool metadata for structured tools
+- [ ] **2b.1:** `--version` flag on all 6 bridge binaries
+- [ ] **2b.1:** Network connect open-network fix (no `psk=""` for unencrypted)
+- [ ] **2b.1:** Serial list_ports structured output with description/vendor
+- [ ] **2b.1:** Display render_image `fit` parameter
+- [ ] **2b.2:** Spec-aligned error codes per bridge (E_BUSY, E_NO_DEVICE, etc.)
+- [ ] **2b.2:** Logging to `/cognitiveos/logs/bridges/<name>.log`
+- [ ] **2b.2:** Resource cost annotations on tools
 
 ## M3 — Inference Engine
 - [ ] `POST /api/generate` produces completions from Raw Model

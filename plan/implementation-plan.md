@@ -117,11 +117,27 @@ All tasks in the initial Phase 1 are implemented and merged to `main`. The CPM C
 | `verify` dependency check | Verify referenced dependencies exist in archive | Small |
 | `publish --scope` / `--visibility` | Support scoped packages and visibility flags | Small |
 
-### Phase 2: Hardware Bridges
+### Phase 2: Hardware Bridges — Initial Implementation ✅ COMPLETE
 
 **Repos:** `core-mcp-bridges`
 
-**Goal:** Five working MCP servers that the Wide Model can call to control hardware.
+All six bridges (display, audio, network, gpio, serial, package) are implemented with core functionality using the shared `internal/mcp` JSON-RPC 2.0 framework.
+
+### Phase 2b: Bridge Spec Compliance
+
+**Goal:** Close gaps between the MCP conventions spec, bridge JSON schemas, and the implementation.
+
+| Gap | Task | Est. effort |
+|-----|------|-------------|
+| Error envelope format | Change `E_<CODE>: message` to spec-standard `ERROR:<CODE>: <message>` across all 6 bridges | Small |
+| `outputSchema` in tool metadata | Add `outputSchema` to tools that return structured data (list/interfaces/status tools) | Small |
+| `--version` flag | Add `--version` flag to all 6 bridge binaries per MCP conventions spec | Small |
+| Network connect open-network bug | Fix wpa_supplicant config to not write `psk=""` when no password | Small |
+| Serial list_ports structured output | Add description/vendor/product to structured port list response | Small |
+| Display render_image `fit` param | Add `fit` parameter support (fill/fit/stretch) | Small |
+| Spec-aligned error codes per bridge | Add missing error codes: `E_BUSY`, `E_UNSUPPORTED_FORMAT`, `E_NO_DEVICE`, `E_SESSION_NOT_FOUND`, etc. | Medium |
+| Logging path per spec | Route logs to `/cognitiveos/logs/bridges/<name>.log` instead of stderr | Small |
+| Resource cost annotations | Add optional `cost` annotations to tool definitions | Small |
 
 **Bridge: display-mcp**
 
