@@ -75,14 +75,26 @@
 - [ ] **3b.2:** Status endpoint queries raw socket for raw_model info
 
 ## M4 — Integrated System
-- [ ] cognitiveosd runs as PID 1 or supervised daemon
-- [ ] cli connects to daemon socket
-- [ ] Input flows: cli → daemon → Wide Model → daemon → cli
-- [ ] System codes: wake, idle, security, reset working
-- [ ] MCP servers spawn and register automatically
-- [ ] Tool routing: Wide Model → daemon → MCP server → daemon → Wide Model
-- [ ] Hardware audit runs on interval
+- [x] cognitiveosd runs as PID 1 or supervised daemon
+- [x] cli connects to daemon socket
+- [x] Input flows: cli → daemon → Wide Model → daemon → cli
+- [x] System codes: wake, idle, security, reset working
+- [x] MCP servers spawn and register automatically
+- [x] Tool routing: Wide Model → daemon → MCP server → daemon → Wide Model
+- [x] Hardware audit runs on interval
 - [ ] **Demo:** End-to-end: "Show me photo" → AI calls display-mcp → photo appears
+
+## M4b — Daemon Spec Compliance
+- [x] **4b.1:** Bridge error format: MCP Invoke handles `isError:true` in result (Phase 2b compatibility)
+- [x] **4b.1:** UUID v4 generation for message envelope IDs
+- [x] **4b.1:** Shutdown stops accepting new messages (`E_SHUTDOWN` guard)
+- [x] **4b.1:** `/cognitiveos/run/` unmount in shutdown sequence
+- [x] **4b.1:** Wide model status tracking (loading/unloaded/loaded)
+- [x] **4b.2:** Spec-aligned error codes: `E_INSUFFICIENT_RESOURCES`, `E_INTERNAL`, `E_SHUTDOWN`, `E_PACKAGE_DENIED`, `E_PACKAGE_MANIFEST_FETCH`, `E_PACKAGE_HAS_RAW_MODEL`
+- [x] **4b.2:** CPU audit from `/proc/cpuinfo` + `/proc/loadavg` (cores, load percent)
+- [x] **4b.2:** NPU audit from `/sys/class/accelerator` + `/dev/npu*`
+- [ ] **4b.2:** Resource negotiation flow (negotiate message type, resource freeing)
+- [ ] **4b.2:** Per-patch MCP server spawning from `runtime.mcp_servers` in manifests
 
 ## M5 — Bootable ISO
 - [ ] `make iso` produces bootable x86_64 ISO

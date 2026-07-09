@@ -245,6 +245,23 @@ All six bridges (display, audio, network, gpio, serial, package) are implemented
 - Hardware audit runs every 60 seconds
 - Daemon survives MCP server crashes
 
+### Phase 4b: Daemon Spec Compliance
+
+**Repos:** `cognitiveosd`
+
+**Goal:** Bring the daemon into full compliance with `cognitiveosd-api.md`.
+
+| Task | Dependencies | Est. effort | Status |
+|------|-------------|-------------|--------|
+| Bridge error format: MCP Invoke handles `isError:true` in result | Phase 2b bridge compliance | Small | ✅ Done |
+| UUID v4 generation for message envelope IDs | cognitiveosd-api | Small | ✅ Done |
+| Shutdown stops accepting new messages (`E_SHUTDOWN` guard) | cognitiveosd-api | Small | ✅ Done |
+| `/cognitiveos/run/` unmount in shutdown sequence | cognitiveosd-api | Small | ✅ Done |
+| Wide model status tracking (loading/unloaded/loaded) | cognitiveosd-api | Small | ✅ Done |
+| Spec-aligned error codes (`E_INSUFFICIENT_RESOURCES`, `E_INTERNAL`, `E_SHUTDOWN`, `E_PACKAGE_*`) | cognitiveosd-api | Small | ✅ Done |
+| CPU audit from `/proc/cpuinfo` + `/proc/loadavg` | cognitiveosd-api | Small | ✅ Done |
+| NPU audit from `/sys/class/accelerator` + `/dev/npu*` | cognitiveosd-api | Small | ✅ Done |
+
 ### Phase 5: User Interface
 
 **Repos:** `cli`
