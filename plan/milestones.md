@@ -42,14 +42,14 @@
 - [x] Shared MCP JSON-RPC 2.0 framework in internal/mcp
 - [x] **Demo:** "Show me photo.jpg" → image appears on screen
 
-## M2b — Bridge Spec Compliance
-- [ ] **2b.1:** Error envelope format (`ERROR:<CODE>:<message>` across all bridges)
-- [ ] **2b.1:** `outputSchema` in tool metadata for structured tools
-- [ ] **2b.1:** `--version` flag on all 6 bridge binaries
-- [ ] **2b.1:** Network connect open-network fix (no `psk=""` for unencrypted)
-- [ ] **2b.1:** Serial list_ports structured output with description/vendor
-- [ ] **2b.1:** Display render_image `fit` parameter
-- [ ] **2b.2:** Spec-aligned error codes per bridge (E_BUSY, E_NO_DEVICE, etc.)
+## M2b — Bridge Spec Compliance ✅ COMPLETE
+- [x] **2b.1:** Error envelope format (`ERROR:<CODE>:<message>` across all bridges)
+- [x] **2b.1:** `outputSchema` in tool metadata for structured tools
+- [x] **2b.1:** `--version` flag on all 6 bridge binaries
+- [x] **2b.1:** Network connect open-network fix (no `psk=""` for unencrypted)
+- [x] **2b.1:** Serial list_ports structured output with description/vendor
+- [x] **2b.1:** Display render_image `fit` parameter
+- [x] **2b.2:** Spec-aligned error codes per bridge (E_BUSY, E_NO_DEVICE, etc.)
 - [ ] **2b.2:** Logging to `/cognitiveos/logs/bridges/<name>.log`
 - [ ] **2b.2:** Resource cost annotations on tools
 
