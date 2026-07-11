@@ -5,8 +5,14 @@
 Each CognitiveOS repo has its own CI pipeline defined in `.github/workflows/`. This document defines the standard pipeline template that every repo should implement.
 
 ## Standard CI Workflow
+ 
+### Cloning Conventions
+To ensure portability and avoid authentication failures in constrained build environments (e.g., QEMU, CI runners):
+- **Development**: Use SSH (`git@github.com:`) for all git operations.
+- **Build-time/CI**: Build scripts that clone public dependencies MUST use HTTPS (`https://github.com/`) to avoid requiring an SSH agent or private keys in public scopes.
 
 File: `.github/workflows/ci.yml`
+
 
 ```yaml
 name: CI
@@ -158,9 +164,21 @@ Each repo README should include:
 ```
 
 ## Runner Requirements
+ 
+### Hardware Class Mapping
+The project defines standard hardware tiers to determine which models are baked into distribution images.
+
+| Class | RAM | VRAM | Storage | OS/Arch | Raw Model | Wide Model | CI buildable |
+|-------|-----|------|---------|---------|-----------|------------|:---:|
+| `titan` | ≥16 GB | ≥4 GB | ≥64 GB | linux/arm64 | 235B Qwen GGUF | None — remote/`.cgp` | No |
+| `standard` | ≥8 GB | — | ≥16 GB | linux/amd64 | 1.5B GGUF | 8B Gemma 4 (baked) | Yes |
+| `gateway` | ≥4 GB | — | ≥8 GB | linux/amd64 | Compiled-in (no GGUF) | Remote on first boot | Yes |
+| `edge` | ≥2 GB | — | ≥4 GB | linux/arm64, linux/armv7 | 0.5B GGUF | Tiny (auto-selected) | Slow (QEMU) |
+| `micro` | ≥512 MB | — | ≥1 GB | linux/armv7 | Compiled-in (no GGUF) | Remote-only (thin client) | Slow (QEMU) |
 
 | Test type | Runner | Notes |
 |-----------|--------|-------|
+
 | Lint, unit, build | Standard GitHub runner | ubuntu-latest |
 | Integration | Standard GitHub runner | May need `sudo` for some socket tests |
 | Cross-compile | Standard GitHub runner | Go cross-compile is native |

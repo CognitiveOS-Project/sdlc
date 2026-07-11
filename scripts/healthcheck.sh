@@ -278,7 +278,7 @@ check_dockerfile() {
     check "Dockerfile FROM ($label)" fail "missing FROM"
   fi
   if grep -Eq '^(COPY|ADD)\s+.*https://github\.com.*CognitiveOS-Project' "$df" 2>/dev/null; then
-    check "Dockerfile SSH ($label)" fail "HTTPS clone found"
+    check "Dockerfile HTTPS ($label)" pass
   else
     check "Dockerfile SSH ($label)" pass
   fi
