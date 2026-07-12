@@ -117,6 +117,14 @@ All tasks in the initial Phase 1 are implemented and merged to `main`. The CPM C
 | `verify` dependency check | Verify referenced dependencies exist in archive | Small |
 | `publish --scope` / `--visibility` | Support scoped packages and visibility flags | Small |
 
+#### Phase 1b.5 — Packaging Enhancements
+
+| Gap | Task | Est. effort | Status |
+|-----|------|-------------|--------|
+| Manifest-based packing | Implement `--manifest` flag in `cpm pack` with auto-detection and merge logic | Small | ✅ Done |
+| Component manifests | Create `cognitive.json` for all core components (bridges, daemon, cli, inference) | Small | ✅ Done |
+| Makefile integration | Update component Makefiles to use manifest-based packaging | Small | ✅ Done |
+
 ### Phase 2: Hardware Bridges — Initial Implementation ✅ COMPLETE
 
 **Repos:** `core-mcp-bridges`
@@ -445,3 +453,4 @@ M8  ─── v0.1.0 release                             (ALL PHASES)
 | .cgp format too rigid for complex skills | Low | Low | Design with extensions in mind; cognitive.json supports `extras` field |
 | Performance on RPi Zero too slow for real-time voice | High | Medium | Offload voice processing to Wide Model server; keep Raw Model minimal |
 | Registry becomes single point of failure | Low | Low | Design for multiple registries; support offline .cgp files |
+\n## System Dependencies Implementation Summary\n\nThe system-level dependency management is implemented as a deferred registration and installation system.\n\n### Architecture\n1. **Manifest Declaration**: CGP manifests declare system dependencies in `hardware_dependencies.packages` with a lifecycle stage (`build`, `boot`, `install`, `runtime`).\n2. **Registration**: During `cpm install`, dependencies are registered via `cpm register-dependencies`, writing a record to `/cognitiveos/lib/cpm/queue/<stage>/<patch_id>_<dep_id>.json`.\n3. **Installation**: Dependencies are installed via `cpm install-dependencies --stage <stage>`, which processes the queue and uses the declared package manager (e.g., `apk`).\n4. **Lifecycle Flow**:\n   - **Build Stage**: Handled by build scripts during image creation.\n   - **Boot Stage**: Handled by an OpenRC service (`cpm-boot-deps`) before the system daemon starts.\n   - **Install Stage**: Handled immediately by `cpm install` before the patch is extracted.\n   - **Runtime Stage**: Handled by an OpenRC service or the daemon on demand.\n\n### Key Components\n- **Queue**: Durable records in `/cognitiveos/lib/cpm/queue/` ensure dependencies survive reboots.\n- **Manager**: `cpm/internal/manager` abstracts package manager specifics (apk, npm, etc.).\n- **Idempotency**: The installer verifies package presence before attempting installation, allowing multiple patches to share dependencies.\n- **Safety**: The system separates base OS packages (curated in `packages.<class>-<arch>`) from CGP-specific dependencies.
