@@ -19,7 +19,7 @@ This plan covers the implementation of all 10 repos in the CognitiveOS-Project o
 | `inference` | Brain | Go/C | LLM inference engine |
 | `cognitiveosd` | System | Go | Background system daemon |
 | `cli` | UI | Go | Bubble Tea TUI frontend |
-| `cognitiveos-distro` | Distribution | Shell/Docker | Alpine image builder |
+| `cognitiveos-alpine-distro` | Distribution | Shell/Docker | Alpine image builder |
 | `cgp-template` | Ecosystem | Template | .cgp skill boilerplate |
 | `registry-server` | Infrastructure | Go | .cgp notary proxy (metadata + checksum, no file hosting) |
 
@@ -45,7 +45,7 @@ product-specs ──────────────────────
     │
     └── cgp-template ─ depends on .cgp format spec
 
-cognitiveos-distro ───── depends on all built binaries
+cognitiveos-alpine-distro ───── depends on all built binaries
 ```
 
 ## Phase Breakdown
@@ -320,7 +320,7 @@ All six bridges (display, audio, network, gpio, serial, package) are implemented
 
 ### Phase 6: Distribution Image
 
-**Repos:** `cognitiveos-distro`
+**Repos:** `cognitiveos-alpine-distro`
 
 **Goal:** Bootable Alpine Linux image with all CognitiveOS components baked in.
 

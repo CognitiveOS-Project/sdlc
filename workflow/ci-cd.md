@@ -74,7 +74,7 @@ jobs:
       - run: CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build ./cmd/...
 ```
 
-### cognitiveos-distro — Full Build Test
+### cognitiveos-alpine-distro — Full Build Test
 ```yaml
   build-iso:
     runs-on: ubuntu-latest

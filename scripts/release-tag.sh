@@ -15,7 +15,7 @@ set -e
 
 BASE_DIR="${COGNITIVEOS_RELEASE_DIR:-$HOME/.cache/cognitiveos/releases}"
 ORG="CognitiveOS-Project"
-REPOS="cognitiveos product-specs sdlc cpm core-mcp-bridges inference cognitiveosd cli registry-server cgp-template cognitiveos-distro cognitive-os.org .github"
+REPOS="cognitiveos product-specs sdlc cpm core-mcp-bridges inference cognitiveosd cli registry-server cgp-template cognitiveos-alpine-distro cognitive-os.org .github"
 
 # Map remote repo names to local checkout directories.
 # .github collides with /.github in the workspace root (see AGENTS.md).

@@ -30,7 +30,7 @@
 
 ### 3. Cross-Component Tests (across repos)
 
-**Location:** `cognitiveos-distro/tests/` or standalone test suite
+**Location:** `cognitiveos-alpine-distro/tests/` or standalone test suite
 
 **Scope:** Interactions between 2+ CognitiveOS components
 
@@ -43,7 +43,7 @@
 
 ### 4. Hardware Tests (real devices)
 
-**Location:** `cognitiveos-distro/tests/hardware/`
+**Location:** `cognitiveos-alpine-distro/tests/hardware/`
 
 **Scope:** Tests requiring physical hardware (framebuffer, audio, GPIO)
 
@@ -56,7 +56,7 @@
 
 ### 5. Boot Tests (full system)
 
-**Location:** `cognitiveos-distro/tests/boot/`
+**Location:** `cognitiveos-alpine-distro/tests/boot/`
 
 **Scope:** Full OS boot in QEMU or on hardware
 

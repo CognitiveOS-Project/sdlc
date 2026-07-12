@@ -3,10 +3,10 @@
 set -e
 
 # ── Config ──
-ALL_REPOS="cognitiveos product-specs sdlc cpm core-mcp-bridges inference cognitiveosd cli cognitiveos-distro registry-server cgp-template"
+ALL_REPOS="cognitiveos product-specs sdlc cpm core-mcp-bridges inference cognitiveosd cli cognitiveos-alpine-distro registry-server cgp-template"
 
 GO_REPOS="inference cognitiveosd cli cpm core-mcp-bridges registry-server"
-SHELL_REPOS="cognitiveos-distro sdlc"
+SHELL_REPOS="cognitiveos-alpine-distro sdlc"
 CGO_REPOS="inference"
 
 CURRENT_TAG="v0.4.0"
@@ -431,8 +431,8 @@ for repo in $ALL_REPOS; do
   # Dockerfile checks
   check_dockerfile "$dir" "$repo"
 
-  # cognitiveos-distro specific
-  if [ "$repo" = "cognitiveos-distro" ]; then
+  # cognitiveos-alpine-distro specific
+  if [ "$repo" = "cognitiveos-alpine-distro" ]; then
     check_cgo_enabled "$dir" "$repo"
     check_cograw_target "$dir" "$repo"
   fi
