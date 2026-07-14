@@ -337,7 +337,7 @@ All six bridges (display, audio, network, gpio, serial, package) are implemented
 | Binary naming — repo-owned (coginfer, bridges/) | inference, core-mcp-bridges | Small | ✅ Done |
 | `cpm download-weights` picks smallest by size | cpm | Small | ✅ Done |
 | Alpine packages: fbv, fbi, gpiod-tools | None | Small | ✅ Done |
-| VERSION file + spec image naming | None | Small | ✅ Done |
+| Dynamic versioning via git tags | None | Small | ✅ Done |
 | Overlay models/ dirs + image-manifest.json | None | Small | ✅ Done |
 | Model download step in build-overlay.sh | cpm download-weights | Small | ✅ Done |
 
