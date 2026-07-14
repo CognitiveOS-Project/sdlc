@@ -338,6 +338,7 @@ All six bridges (display, audio, network, gpio, serial, package) are implemented
 | `cpm download-weights` picks smallest by size | cpm | Small | ✅ Done |
 | Alpine packages: fbv, fbi, gpiod-tools | None | Small | ✅ Done |
 | Dynamic versioning via git tags | None | Small | ✅ Done |
+| Docker entrypoint script (`docker-init.sh`) | None | Small | ✅ Done |
 | Overlay models/ dirs + image-manifest.json | None | Small | ✅ Done |
 | Model download step in build-overlay.sh | cpm download-weights | Small | ✅ Done |
 
