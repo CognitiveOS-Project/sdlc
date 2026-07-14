@@ -20,6 +20,22 @@ The boot chain is **non-functional**. Neither ISO nor Docker deployments can sta
 
 **Impact:** No deployment method (ISO, Docker, bare-metal) can reach a working "CognitiveOS ready" state.
 
+### Binary Build Chain (Working)
+
+The build pipeline correctly compiles and installs all 5 binaries. The gap is in the init system, not the build system.
+
+| Binary | Source Repo | Build | Install Path | Init Mechanism |
+|--------|------------|-------|-------------|----------------|
+| cograw | inference | ✅ `make build` | `/usr/local/bin/cograw` | ❌ No init script |
+| coginfer | inference | ✅ `make build` | `/usr/local/bin/coginfer` | ❌ No init script |
+| cognitiveosd | cognitiveosd | ✅ `make build` | `/usr/local/bin/cognitiveosd` | ⚠️ CLI spawns (fire-and-forget) |
+| cognitiveos-cli | cli | ✅ `make build` | `/usr/local/bin/cognitiveos-cli` | ✅ inittab respawn |
+| cpm | cpm | ✅ `make build` | `/usr/local/bin/cpm` | ✅ OpenRC init scripts |
+
+**Build flow:** `build-binaries.sh` iterates repos in dependency order (`cpm → inference → core-mcp-bridges → cognitiveosd → cli`), runs `make build` for each, copies `*/build/bin/*` into `distro/build/bin/`. `build-overlay.sh` then copies everything to `overlay/usr/local/bin/`. For ISO: `genapkovl` tars the overlay. For Docker: `COPY --from=builder /out/ /`.
+
+**Key insight:** 5 of 5 binaries are correctly compiled and installed. 2 of 5 have proper init mechanisms. 3 of 5 are never started by the system.
+
 ## Scope
 
 ### In Scope
@@ -242,6 +258,8 @@ Phases 1 and 2 are sequential (Phase 2 benefits from Phase 1's init script knowl
 | Phase 2 | `cognitiveos-alpine-distro` | 7 Dockerfiles, entrypoint script, 6 package lists |
 | Phase 3 | `cognitiveosd`, `cognitiveos-alpine-distro` | go.mod, config.go, main.go, config.toml |
 | Phase 4 | `inference`, `cli`, `cognitiveosd` | coginfer main.go, client.go, config.go, cograw main.go |
+
+**Build chain dependency:** All phases depend on the existing build pipeline (`build-binaries.sh` → `build-overlay.sh` → ISO/Docker packaging). No changes to the build pipeline are needed — the gap is purely in runtime init, not build/install.
 
 ## Testing Strategy
 
