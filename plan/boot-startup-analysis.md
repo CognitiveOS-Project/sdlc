@@ -215,51 +215,71 @@ config.Default → FromTOML("/etc/cognitiveos/config.toml") → FromEnv() → fl
 
 **Goal:** Fix known bugs that affect boot reliability.
 
-**Dependencies:** None (independent of other phases).
+**Dependencies:** None (independent of other phases). Note: Phase 4.1 (cograw `--backend` flag) must complete before Phase 2 (Docker) can implement degraded mode.
 
 **Deliverables:**
 
 | # | Deliverable | File | Description |
 |---|------------|------|-------------|
-| 4.1 | coginfer signal handling | `inference/cmd/coginfer/main.go` | Trap SIGTERM/SIGINT, call Unload(), exit gracefully |
-| 4.2 | CLI reconnection fix | `cli/internal/client/client.go` | Close Messages channel in Close() |
-| 4.3 | config.Derive() fix | `cognitiveosd/internal/config/config.go` | Don't overwrite SocketPath if --socket was explicitly set |
-| 4.4 | MCPBinDir fix | `cognitiveosd/internal/config/config.go` | Change default from `/cognitiveos/bin` to `/usr/local/lib/cognitiveos/bridges` |
-| 4.5 | cograw mock flag | `inference/cmd/cograw/main.go` | Add `--backend mock` flag for testing (skips os.Stat on model) |
+| 4.1 | **cograw `--backend` flag** | `inference/cmd/cograw/main.go` | Add `--backend` flag (like coginfer) to select mock or cgo at runtime instead of compile-time. Required for Docker degraded mode. |
+| 4.2 | coginfer signal handling | `inference/cmd/coginfer/main.go` | Replace bare `http.ListenAndServe` with `http.Server` + goroutine + `signal.Notify` + `Shutdown(ctx)`. Trap SIGTERM/SIGINT. |
+| 4.3 | CLI reconnection fix | `cli/internal/client/client.go` | Close `Messages` channel in `Close()` so `listenCmd`'s `range conn.Messages` unblocks after connection drop. |
+| 4.4 | config.Derive() fix | `cognitiveosd/internal/config/config.go` | Add `socketPathExplicit` bool. Skip `SocketPath` overwrite in `Derive()` if `--socket` flag or `COGNITIVEOS_SOCKET` env was explicitly set. |
+| 4.5 | MCPBinDir fix | `cognitiveosd/internal/config/config.go` | Change default from `/cognitiveos/bin` to `/usr/local/lib/cognitiveos/bridges`. |
+
+**Design decisions:**
+
+| Decision | Rationale |
+|----------|-----------|
+| Add `--backend` to cograw | cograw currently uses compile-time build tags for backend selection. Adding a runtime flag enables Docker degraded mode (mock backend when model file is missing) and testing without GGUF. Pattern already exists in coginfer. |
+| Replace `http.ListenAndServe` | Current code uses bare `http.ListenAndServe` with zero signal handling. SIGTERM kills mid-request and model is not unloaded. Must expose `*http.Server` for `Shutdown()` support. |
+| Close `Messages` in `Close()` | Current `listenCmd` does `for env := range conn.Messages` which blocks forever after connection drop because `Messages` channel is never closed. `reconnectMsg{}` is unreachable. |
+| Track `socketPathExplicit` | `Derive()` unconditionally overwrites `SocketPath` from `RunDir`, making `COGNITIVEOS_SOCKET` env and `--socket` flag dead code. Track whether socket was explicitly set. |
 
 **Verification criteria:**
+- [ ] `cograw --backend mock` starts without a GGUF model file
+- [ ] `cograw --backend cgo` starts with GGUF model (production behavior unchanged)
 - [ ] coginfer exits cleanly on SIGTERM (model unloaded, log message)
 - [ ] CLI reconnects after daemon restart (Messages channel closed properly)
 - [ ] `--socket /custom/path.sock` is preserved through Derive()
+- [ ] `COGNITIVEOS_SOCKET=/custom/path.sock` is preserved through Derive()
 - [ ] MCPBinDir default matches actual bridge installation path
-- [ ] `cograw --backend mock` starts without a GGUF model file
 - [ ] All unit tests pass in affected repos
 
 **Risk:** Low. Each fix is isolated and well-understood.
 
-**Estimated effort:** 2-3 hours total.
+**Estimated effort:** 3-4 hours total.
 
 ## Implementation Order
 
 ```
 Phase 1 (ISO Boot)     ──── immediate, unblocks real hardware
-Phase 2 (Docker Boot)  ──── after Phase 1, unblocks container deployment
-Phase 3 (TOML Config)  ──── independent, can run in parallel with Phase 1/2
-Phase 4 (Reliability)  ──── independent, can run in parallel with Phase 1/2/3
+Phase 3 (TOML Config)  ──── independent, can run in parallel with Phase 1
+Phase 4 (Reliability)  ──── independent, can run in parallel with Phase 1/3
+  4.1 cograw --backend  ──── must complete before Phase 2
+Phase 2 (Docker Boot)  ──── after Phase 4.1, unblocks container deployment
 ```
 
-Phases 1 and 2 are sequential (Phase 2 benefits from Phase 1's init script knowledge). Phases 3 and 4 are fully independent and can be done in parallel with anything.
+Phase 2 depends on Phase 4.1 because Docker degraded mode requires the `--backend mock` flag on cograw to handle missing model files gracefully. All other phases are independent.
 
 ## Cross-Repo Impact
 
 | Phase | Repos Affected | Changes |
 |-------|---------------|---------|
 | Phase 1 | `cognitiveos-alpine-distro` | inittab, 3 new init scripts, genapkovl update |
-| Phase 2 | `cognitiveos-alpine-distro` | 7 Dockerfiles, entrypoint script, 6 package lists |
+| Phase 2 | `cognitiveos-alpine-distro` | 7 Dockerfiles, entrypoint script, 6 package lists (add tini) |
 | Phase 3 | `cognitiveosd`, `cognitiveos-alpine-distro` | go.mod, config.go, main.go, config.toml |
-| Phase 4 | `inference`, `cli`, `cognitiveosd` | coginfer main.go, client.go, config.go, cograw main.go |
+| Phase 4 | `inference`, `cli`, `cognitiveosd` | cograw main.go (4.1), coginfer main.go (4.2), client.go (4.3), config.go (4.4, 4.5) |
 
 **Build chain dependency:** All phases depend on the existing build pipeline (`build-binaries.sh` → `build-overlay.sh` → ISO/Docker packaging). No changes to the build pipeline are needed — the gap is purely in runtime init, not build/install.
+
+## Design Decisions (Resolved)
+
+| Decision | Resolution | Rationale |
+|----------|-----------|-----------|
+| Docker missing model | Option A — degraded mode | Entrypoint detects missing GGUF, logs warning, starts cograw with `--backend mock`, continues degraded. System operates with guardrail active but no inference. |
+| cograw backend selection | Add `--backend` flag | Currently compile-time only via build tags. Runtime flag enables degraded mode and testing. Pattern exists in coginfer. |
+| Health check tool | BusyBox wget | Available in all Alpine images. Works for plain HTTP on `127.0.0.1`. No package change needed. |
 
 ## Testing Strategy
 

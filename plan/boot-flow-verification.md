@@ -227,7 +227,37 @@ cognitiveosd
 
 **Pass criteria:** tini is PID 1, not cognitiveos-cli or busybox init.
 
-### Test 2.5: Clean container shutdown
+### Test 2.5: Docker degraded mode (missing model)
+
+**Precondition:** Phase 2 + Phase 4.1 fixes applied. No model file volume-mounted.
+
+**Steps:**
+1. Run: `docker run -d --name test-degraded cognitiveos:standard-x86_64-test` (no `-v` for model)
+2. Wait 5 seconds
+3. Exec: `docker exec test-degraded ps aux` — verify cograw running with `--backend mock`
+4. Exec: `docker exec test-degraded cat /cognitiveos/logs/cograw.log` — verify mock mode log message
+5. Exec: `docker exec test-degraded curl -s http://127.0.0.1:11434/health` — verify coginfer responds
+6. Exec: `docker exec test-degraded ls -la /cognitiveos/run/` — verify both sockets exist
+
+**Expected:** cograw starts in mock mode, logs warning about missing model. coginfer starts normally. cognitiveosd connects to both. CLI renders TUI. System operates in degraded mode (guardrail active, no inference).
+
+**Pass criteria:** All processes running. Both sockets present. CLI responsive. No crash loops.
+
+### Test 2.6: Docker production mode (model mounted)
+
+**Precondition:** Phase 2 + Phase 4.1 fixes applied. Model file volume-mounted.
+
+**Steps:**
+1. Run: `docker run -d --name test-prod -v /path/to/raw-model.gguf:/cognitiveos/models/raw/raw-model.gguf:ro cognitiveos:standard-x86_64-test`
+2. Wait 5 seconds
+3. Exec: `docker exec test-prod ps aux` — verify cograw running with `--backend cgo`
+4. Exec: `docker exec test-prod cat /cognitiveos/logs/cograw.log` — verify GGUF loaded
+
+**Expected:** cograw starts in cgo mode, loads GGUF, opens raw.sock. Full functionality.
+
+**Pass criteria:** All processes running in production mode. Model loaded. Full inference available.
+
+### Test 2.7: Clean container shutdown
 
 **Precondition:** Container running
 
@@ -237,7 +267,7 @@ cognitiveosd
 
 **Pass criteria:** Container status is `exited`. No ` killed` status (would indicate SIGKILL). Check logs: `docker logs test-cognitiveos` for clean shutdown messages.
 
-### Test 2.6: Container restart
+### Test 2.8: Container restart
 
 **Precondition:** Container stopped
 
@@ -347,17 +377,20 @@ cognitiveosd
 
 **Pass criteria:** MCPBinDir defaults to correct path. Bridges are found and loaded.
 
-### Test 4.5: cograw mock mode
+### Test 4.5: cograw --backend flag
 
-**Precondition:** Phase 4 fixes applied
+**Precondition:** Phase 4.1 fixes applied
 
 **Steps:**
-1. Build cograw with `CGO_ENABLED=0`
-2. Run: `cograw --backend mock --socket /tmp/test-raw.sock`
-3. Verify raw.sock created
+1. Build cograw: `go build -o cograw ./cmd/cograw`
+2. Run with mock backend (no model file needed): `./cograw --backend mock --socket /tmp/test-raw.sock`
+3. Verify raw.sock created: `ls -la /tmp/test-raw.sock`
 4. Verify healthcheck responds
+5. Send SIGTERM, verify clean shutdown
+6. Run with cgo backend and model: `./cograw --backend cgo --model /path/to/model.gguf --socket /tmp/test-raw2.sock`
+7. Verify raw.sock created and model loaded
 
-**Pass criteria:** cograw starts without a GGUF model file. Healthcheck returns "ready".
+**Pass criteria:** `--backend mock` starts without GGUF. `--backend cgo` loads model normally. Both shut down cleanly on SIGTERM.
 
 ---
 
@@ -419,8 +452,10 @@ cognitiveosd
 | 2.2 Container processes | 2 | Docker | Critical | Yes (`ps` check) |
 | 2.3 Container sockets | 2 | Docker | Critical | Yes (curl check) |
 | 2.4 Tini PID 1 | 2 | Docker | High | Yes (`/proc/1/cmdline`) |
-| 2.5 Clean shutdown | 2 | Docker | High | Yes (exit code) |
-| 2.6 Container restart | 2 | Docker | Medium | Yes (ps check) |
+| 2.5 Docker degraded mode | 2 | Docker | Critical | Yes (ps + log check) |
+| 2.6 Docker production mode | 2 | Docker | High | Yes (ps + log check) |
+| 2.7 Clean shutdown | 2 | Docker | High | Yes (exit code) |
+| 2.8 Container restart | 2 | Docker | Medium | Yes (ps check) |
 | 3.1 Default config | 3 | ISO or Docker | High | Yes (log check) |
 | 3.2 Custom TOML | 3 | ISO or Docker | Medium | Yes (timestamp check) |
 | 3.3 Env override | 3 | ISO or Docker | Medium | Yes (timestamp check) |
