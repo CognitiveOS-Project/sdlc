@@ -7,6 +7,7 @@ Software Development Life Cycle documentation for the CognitiveOS project.
 | Path | Description |
 |------|-------------|
 | `plan/implementation-plan.md` | Full build plan with phases, dependencies, and deliverables |
+| `plan/boot-startup-analysis.md` | Boot/startup lifecycle implementation plan — phases, deliverables, verification |
 | `plan/milestones.md` | Milestone tracking and progress |
 | `plan/risks.md` | Risk register and mitigation strategies |
 | `workflow/contribution-guide.md` | How to contribute to CognitiveOS repos |
