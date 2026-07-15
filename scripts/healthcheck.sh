@@ -9,7 +9,7 @@ GO_REPOS="inference cognitiveosd cli coginit cpm core-mcp-bridges registry-serve
 SHELL_REPOS="cognitiveos-alpine-distro sdlc"
 CGO_REPOS="inference"
 
-CURRENT_TAG="v0.4.0"
+CURRENT_TAG=""
 
 # ── Colors ──
 RED='\033[0;31m'
@@ -40,6 +40,7 @@ Periodic CI health check across all CognitiveOS repos.
 Options:
   --work-dir DIR    Directory for repo clones (default: temp dir)
   --report-dir DIR  Directory for report output (default: ./reports/)
+  --tag TAG         Tag to check for (required)
   --branch BRANCH   Branch to check (default: main)
   --json            Output JSON summary to stdout
   --quiet           Suppress human-readable progress
@@ -310,6 +311,7 @@ while [ $# -gt 0 ]; do
     --work-dir) shift; WORK_DIR="$1" ;;
     --report-dir) shift; REPORT_DIR="$1" ;;
     --branch) shift; BRANCH="$1" ;;
+    --tag) shift; CURRENT_TAG="$1" ;;
     --json) MODE_JSON=1 ;;
     --quiet) MODE_QUIET=1 ;;
     --help|-h) usage ;;
@@ -317,6 +319,12 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+# ── Validate required args ──
+if [ -z "$CURRENT_TAG" ]; then
+  echo "Error: --tag is required" >&2
+  usage
+fi
 
 # ── Setup directories ──
 if [ -z "$WORK_DIR" ]; then
