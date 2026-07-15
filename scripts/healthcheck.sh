@@ -8,6 +8,7 @@ ALL_REPOS="coginit cognitiveos product-specs sdlc cpm core-mcp-bridges inference
 GO_REPOS="inference cognitiveosd cli coginit cpm core-mcp-bridges registry-server"
 SHELL_REPOS="cognitiveos-alpine-distro sdlc"
 CGO_REPOS="inference"
+BUILD_REPOS="coginit cpm inference core-mcp-bridges cognitiveosd cli"
 
 CURRENT_TAG=""
 
@@ -305,6 +306,23 @@ check_cograw_target() {
   fi
 }
 
+check_repo_visibility() {
+  local dir="$1" label="$2"
+  if ! command -v gh >/dev/null 2>&1; then
+    check "visibility ($label)" skip "gh not installed"
+    return
+  fi
+  local vis
+  vis=$(gh -R "CognitiveOS-Project/$label" repo view --json visibility --jq '.visibility' 2>/dev/null || echo "UNKNOWN")
+  if [ "$vis" = "PUBLIC" ]; then
+    check "visibility ($label)" pass "PUBLIC"
+  elif [ "$vis" = "PRIVATE" ]; then
+    check "visibility ($label)" fail "PRIVATE — must be PUBLIC for CI"
+  else
+    check "visibility ($label)" fail "UNKNOWN"
+  fi
+}
+
 # ── Parse args ──
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -409,6 +427,13 @@ for repo in $ALL_REPOS; do
       check "tag $CURRENT_TAG" fail "missing"
     fi
   fi
+
+  # Repo visibility (only for build-binaries repos — CI clones via HTTPS)
+  case " $BUILD_REPOS " in
+    *" $repo "*)
+      check_repo_visibility "$dir" "$repo"
+      ;;
+  esac
 
   # Go repo checks
   case " $GO_REPOS " in
