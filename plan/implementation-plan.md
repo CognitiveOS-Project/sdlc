@@ -348,6 +348,41 @@ All six bridges (display, audio, network, gpio, serial, package) are implemented
 - Boot on QEMU → CLI appears → "CognitiveOS ready"
 - Raw Model loads automatically
 
+### Phase 6b: coginit — Unified PID 1
+
+**Repos:** `coginit` (new)
+
+**Goal:** Replace fragile shell-based init chain with a compiled Go binary that standardizes the CognitiveOS boot sequence across Docker and bare-metal environments.
+
+| Task | Dependencies | Est. effort | Status |
+|------|-------------|-------------|--------|
+| Create `coginit` repo with Go module setup | None | Small | Pending |
+| Environment detection (Docker vs bare-metal) | None | Small | Pending |
+| Signal reaper (SIGCHLD, SIGINT, SIGTERM) | None | Small | Pending |
+| Service orchestration (cograw → coginfer → cognitiveosd) | None | Medium | Pending |
+| Socket/HTTP wait helpers | None | Small | Pending |
+| `cpm install-dependencies` integration (boot + runtime stages) | cpm | Small | Pending |
+| Docker path: `syscall.Exec` to hand off to CLI | None | Small | Pending |
+| Bare-metal path: virtual filesystem mounting | None | Small | Pending |
+| Bare-metal path: loopback network configuration | None | Small | Pending |
+| Bare-metal path: TUI supervision loop on /dev/tty1 | None | Medium | Pending |
+| Static build (CGO_ENABLED=0, no dynamic deps) | None | Small | Pending |
+| Update `cognitiveos-alpine-distro` Dockerfiles to use `coginit` | distro | Medium | Pending |
+| Remove `tini` dependency from Docker images | distro | Small | Pending |
+| Remove `docker-init.sh` (replaced by `coginit`) | distro | Small | Pending |
+| Update inittab for bare-metal: `tty1::respawn:/usr/local/bin/coginit` | distro | Small | Pending |
+| Update `build-binaries.sh` to include `coginit` | distro | Small | Pending |
+| Update `verify-boot.sh` to test with `coginit` | distro | Small | Pending |
+| Update `product-specs/specs/boot-flow.md` | product-specs | Small | ✅ Done |
+| Update `product-specs/specs/distro-build-spec.md` | product-specs | Small | Pending |
+
+**Definition of done:**
+- `coginit` binary compiles statically for amd64 and arm64
+- Docker: `coginit` replaces `tini` + `docker-init.sh`, all services start in correct order
+- Bare-metal: `coginit` mounts filesystems, starts services, supervises TUI on /dev/tty1
+- `verify-boot.sh` passes with `coginit` as PID 1
+- Signal handling: `docker stop` triggers graceful shutdown, bare-metal SIGTERM triggers power off
+
 ### Phase 7: Registry and Ecosystem
 
 **Repos:** `registry-server`, `cgp-template`
