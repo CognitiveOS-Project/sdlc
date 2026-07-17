@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
 
       - name: Build
         run: make build
@@ -49,6 +49,45 @@ jobs:
 ```
 
 ## Repo-Specific Additions
+
+### registry-server — Cloud Run Deployment
+
+File: `.github/workflows/deploy-cloud-run.yml`
+
+```yaml
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Build and push Docker image
+        run: |
+          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/registry-server
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy registry-server \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/registry-server \
+            --region us-central1 \
+            --min-instances 0 \
+            --max-instances 10 \
+            --port 8080 \
+            --set-env-vars="S3_ENDPOINT=${{ secrets.R2_ENDPOINT }},S3_BUCKET=${{ secrets.R2_BUCKET }},S3_ACCESS_KEY=${{ secrets.R2_ACCESS_KEY }},S3_SECRET_KEY=${{ secrets.R2_SECRET_KEY }},S3_REGION=auto,BASE_DOMAIN=${{ secrets.BASE_DOMAIN }}"
+```
+
+Setup scripts: `scripts/google-cloud/`, `scripts/cloudflare/`
+
+Full spec: [`product-specs/specs/registry-server-cicd.md`](../../product-specs/specs/registry-server-cicd.md)
 
 ### cpm — Package Integration Tests
 ```yaml
