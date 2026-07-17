@@ -18,7 +18,7 @@ This plan covers the implementation of all 10 repos in the CognitiveOS-Project o
 | `core-mcp-bridges` | Hardware | Go | MCP hardware tool servers |
 | `inference` | Brain | Go/C | LLM inference engine |
 | `cognitiveosd` | System | Go | Background system daemon |
-| `cli` | UI | Go | Bubble Tea TUI frontend |
+| `cli` | UI | Go | Terminal User Interface (TUI) frontend |
 | `cognitiveos-alpine-distro` | Distribution | Shell/Docker | Alpine image builder |
 | `cgp-template` | Ecosystem | Template | .cgp skill boilerplate |
 | `registry-server` | Infrastructure | Go | .cgp notary proxy (metadata + checksum, no file hosting) |
@@ -274,7 +274,7 @@ All six bridges (display, audio, network, gpio, serial, package) are implemented
 
 **Repos:** `cli`
 
-**Goal:** Bubble Tea TUI that replaces the desktop — the human face of CognitiveOS.
+**Goal:** Terminal User Interface (TUI) that replaces the desktop — the human face of CognitiveOS.
 
 | Task | Dependencies | Est. effort |
 |------|-------------|-------------|
@@ -483,7 +483,7 @@ M8  ─── v0.1.0 release                             (ALL PHASES)
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|------------|
 | llama.cpp doesn't cross-compile for Alpine on ARM | Medium | High | Fall back to cloud inference for ARM targets; use pre-built llama.cpp binaries |
-| Bubble Tea TUI flickers during framebuffer transitions | Medium | Medium | Use double-buffering; test on real hardware early |
+| TUI flickers during framebuffer transitions | Medium | Medium | Use double-buffering; test on real hardware early |
 | Wireless drivers missing in custom kernel | Medium | Medium | Start with Ethernet-only; add Wi-Fi drivers iteratively |
 | cgroup isolation breaks MCP servers that need /dev access | Low | Medium | White-list specific /dev entries per server type |
 | .cgp format too rigid for complex skills | Low | Low | Design with extensions in mind; cognitive.json supports `extras` field |
