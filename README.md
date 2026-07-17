@@ -22,6 +22,7 @@ Software Development Life Cycle documentation for the CognitiveOS project.
 
 - [CognitiveOS](https://github.com/CognitiveOS-Project/cognitiveos) — main project repository
 - [cognitive-os.org](https://cognitive-os.org) — project website
+- [coginit](https://github.com/CognitiveOS-Project/coginit) — boot manager
 - [Product Specs](https://github.com/CognitiveOS-Project/product-specs) — standards, schemas, and protocol definitions
 - [CognitiveOS Project](https://github.com/CognitiveOS-Project) — GitHub organization
 
