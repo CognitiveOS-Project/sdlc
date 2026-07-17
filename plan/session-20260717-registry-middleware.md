@@ -62,7 +62,7 @@
 ## Next steps
 
 1. ~~Push changes to GitHub (registry-server + product-specs)~~ DONE
-2. Implement S3-compatible store (Cloudflare R2)
-3. Implement SSH public key authentication
-4. Implement notary/check endpoint
+2. ~~Implement S3-compatible store (Cloudflare R2)~~ DONE
+3. ~~Implement SSH public key authentication~~ DONE
+4. ~~Implement notary/check endpoint~~ DONE
 5. Deploy to Google Cloud Run
