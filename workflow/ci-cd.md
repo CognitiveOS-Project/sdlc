@@ -82,7 +82,7 @@ jobs:
             --min-instances 0 \
             --max-instances 10 \
             --port 8080 \
-            --set-env-vars="S3_ENDPOINT=${{ secrets.R2_ENDPOINT }},S3_BUCKET=${{ secrets.R2_BUCKET }},S3_ACCESS_KEY=${{ secrets.R2_ACCESS_KEY }},S3_SECRET_KEY=${{ secrets.R2_SECRET_KEY }},S3_REGION=auto,BASE_DOMAIN=${{ secrets.BASE_DOMAIN }}"
+            --set-env-vars="S3_ENDPOINT=${{ secrets.R2_ENDPOINT }},S3_BUCKET=${{ secrets.R2_BUCKET }},S3_ACCESS_KEY=${{ secrets.R2_ACCESS_KEY }},S3_SECRET_KEY=${{ secrets.R2_SECRET_KEY }},S3_REGION=auto,BASE_DOMAIN=${{ secrets.BASE_DOMAIN }},REGISTRY_GH_TOKEN=${{ secrets.REGISTRY_GH_TOKEN }},REGISTRY_GH_ORG=${{ secrets.REGISTRY_GH_ORG }}"
 ```
 
 Setup scripts: `scripts/google-cloud/`, `scripts/cloudflare/`
