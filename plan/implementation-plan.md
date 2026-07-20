@@ -125,6 +125,36 @@ All tasks in the initial Phase 1 are implemented and merged to `main`. The CPM C
 | Component manifests | Create `cognitive.json` for all core components (bridges, daemon, cli, inference) | Small | ✅ Done |
 | Makefile integration | Update component Makefiles to use manifest-based packaging | Small | ✅ Done |
 
+### Phase 1c: Auth System — Machine Identity & Login
+
+**Repos:** `cpm`, `registry-server`
+
+**Goal:** Implement the full auth system: signup (machine identity profile), register, login (local key store + server verify), logout, and publish integration.
+
+| Task | Repo | Est. effort | Status |
+|------|------|-------------|--------|
+| `PUT /v1/auth/status` endpoint | registry-server | Small | ✅ Done |
+| `POST /v1/auth/signup` endpoint | registry-server | Medium | ✅ Done |
+| Machine identity profile store (Memory + S3) | registry-server | Medium | ✅ Done |
+| `internal/config/auth.go` — LoadAuth, SaveAuth, RemoveAuth | cpm | Small | ✅ Done |
+| `cpm auth login` — stores key path, verifies on server | cpm | Small | ✅ Done |
+| `cpm auth logout` — clears local auth state | cpm | Small | ✅ Done |
+| `cpm auth signup` — gathers machine profile, signs + sends | cpm | Medium | ✅ Done |
+| `cpm publish` — fallback to auth.json for key path | cpm | Small | ✅ Done |
+| Product-specs: cpm-spec.md auth commands | product-specs | Small | ✅ Done |
+| Product-specs: registry-api.md endpoints | product-specs | Small | ✅ Done |
+| Product-specs: ADR-009 flow update | product-specs | Small | ✅ Done |
+
+**Auth flow:**
+```
+signup → register → login → publish
+   │        │         │        │
+   │        │         │        └─ signs manifest with stored key
+   │        │         └─ stores key path in ~/.cpm/auth.json, verifies on server
+   │        └─ sends .pub to server, server checks signup approved
+   └─ sends machine profile + .pub, server evaluates rules
+```
+
 ### Phase 2: Hardware Bridges — Initial Implementation ✅ COMPLETE
 
 **Repos:** `core-mcp-bridges`
