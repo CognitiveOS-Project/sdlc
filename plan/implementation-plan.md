@@ -155,6 +155,66 @@ signup → register → login → publish
    └─ sends machine profile + .pub, server evaluates rules
 ```
 
+### Phase 1d: Registry Web UI — Owner Management & GitHub OAuth
+
+**Repos:** `registry-server`
+
+**Goal:** Web UI for machine owners to manage their machines. Owner authenticates via GitHub OAuth on their personal device, links SSH public keys to their account, and controls per-machine publish access.
+
+**Why:** CognitiveOS has no browser. The machine can prove "I have this key" but not "I am this person." The web UI lets the owner prove real identity (GitHub OAuth) and link it to the machine's SSH key. This answers "who owns this machine?" from ADR-009.
+
+| Task | Repo | Est. effort | Status |
+|------|------|-------------|--------|
+| `OwnerStore` interface + Memory + S3 implementations | registry-server | Medium | ✅ |
+| GitHub OAuth client (`ExchangeCode`, `FetchUser`, `AuthURL`) | registry-server | Small | ✅ |
+| Signed cookie session middleware | registry-server | Small | ✅ |
+| Web UI handlers (login, dashboard, key CRUD) | registry-server | Medium | ✅ |
+| HTML templates (login, dashboard) | registry-server | Small | ✅ |
+| Publish gating: check key status = "active" | registry-server | Small | ✅ |
+| Wire OwnerStore in main.go, env vars | registry-server | Small | ✅ |
+
+**Owner identity flow:**
+```
+Machine (CognitiveOS)                Owner (personal device)
+───────────────────                  ──────────────────────
+cpm auth signup
+  → sends SSH public key
+  → status: pending (no owner linked)
+                                       GitHub OAuth → proves identity
+                                       → uploads machine's public key
+                                       → sets display name
+                                       → registry links key ↔ owner
+                                       → key status = active
+cpm auth login
+  → server sees key linked + active
+  → status: approved
+cpm auth register → cpm publish → works
+```
+
+**Key status:** active → owner revokes → revoked (publish blocked, downloads work) → owner activates → active
+
+**Data model:**
+```go
+type Owner struct {
+    GitHubID   int64      `json:"github_id"`
+    GitHubUser string     `json:"github_user"`
+    AvatarURL  string     `json:"avatar_url"`
+    Keys       []OwnerKey `json:"keys"`
+}
+
+type OwnerKey struct {
+    Fingerprint string    `json:"fingerprint"`
+    PublicKey   string    `json:"public_key"`
+    DisplayName string    `json:"display_name"`
+    AddedAt     time.Time `json:"added_at"`
+    Status      string    `json:"status"` // active, revoked
+}
+```
+
+**S3 layout:** `auth/owners/{github_id}/owner.json`
+
+**New env vars:** `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `SESSION_SECRET`
+
 ### Phase 2: Hardware Bridges — Initial Implementation ✅ COMPLETE
 
 **Repos:** `core-mcp-bridges`
