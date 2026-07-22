@@ -203,17 +203,54 @@ type Owner struct {
 }
 
 type OwnerKey struct {
-    Fingerprint string    `json:"fingerprint"`
-    PublicKey   string    `json:"public_key"`
-    DisplayName string    `json:"display_name"`
-    AddedAt     time.Time `json:"added_at"`
-    Status      string    `json:"status"` // active, revoked
+    Fingerprint       string    `json:"fingerprint"`
+    PublicKey         string    `json:"public_key"`
+    DisplayName       string    `json:"display_name"`
+    AddedAt           time.Time `json:"added_at"`
+    Status            string    `json:"status"`            // active, revoked
+    PublishPermission bool      `json:"publish_permission"` // owner grants per-machine
 }
 ```
 
 **S3 layout:** `auth/owners/{github_id}/owner.json`
 
 **New env vars:** `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `SESSION_SECRET`
+
+### Phase 1e: Publish Gating & Unlock Codes
+
+**Repos:** `registry-server`, `cpm`
+
+**Goal:** Enforce per-machine publish permission in the owner UI, implement unlock code verification for paid packages.
+
+| Task | Repo | Est. effort | Status |
+|------|------|-------------|--------|
+| `PublishPermission` field on `OwnerKey` | registry-server | Small | ✅ |
+| UI toggle: grant/revoke publish permission per key | registry-server | Small | ✅ |
+| Server: check publish permission in `processPublish()` | registry-server | Small | ✅ |
+| `POST /v1/patches/{name}/{version}/unlock` — real hash verification | registry-server | Small | ✅ |
+| Manifest `unlock_codes` → SHA-256 hashes in Package store | registry-server | Small | ✅ |
+| `cpm install --unlock <code>` flag + server call | cpm | Medium | ✅ |
+| `cpm publish` official path: store unlock code hashes | registry-server | Small | ✅ |
+
+**Publish gating checks (in order):**
+1. Key linked to owner? → `KEY_NOT_CLAIMED`
+2. Key not revoked? → `KEY_REVOKED`
+3. Owner granted publish permission? → `PUBLISH_NOT_AUTHORIZED`
+4. All pass → proceed with publish
+
+**Unlock flow:**
+```
+Publisher (manifest)          Server                     Consumer (cpm install)
+─────────────────             ──────                     ──────────────────────
+unlock_codes: ["CODE123"]    hash("CODE123") → abc123
+  → sends plaintext code     stores abc123 in S3
+                              cpm install --unlock CODE123
+                                → POST /v1/patches/.../unlock {code: "CODE123"}
+                                → hash("CODE123") → abc123
+                                → compare: abc123 == abc123 → match
+                              200 OK
+                                → install proceeds
+```
 
 ### Phase 2: Hardware Bridges — Initial Implementation ✅ COMPLETE
 
