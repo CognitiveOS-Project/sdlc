@@ -93,29 +93,29 @@ All tasks in the initial Phase 1 are implemented and merged to `main`. The CPM C
 
 #### Phase 1b.2 — Registry Protocol Completeness
 
-| Gap | Task | Est. effort |
-|-----|------|-------------|
-| Missing registry endpoints | Add `GetVersions(name)`, `GetDependencies(name)`, `Unlock(name, version, code)` to registry client | Medium |
-| 302 redirect handling | `Download()` should follow HTTP 302 to canonical URL (notary proxy pattern) | Small |
-| Version status awareness | Check `active/deprecated/buggy` status before install (reject deprecated/buggy); show in `list`/`info` | Medium |
+| Gap | Task | Est. effort | Status |
+|-----|------|-------------|--------|
+| Missing registry endpoints | Add `GetVersions(name)`, `GetDependencies(name)`, `Unlock(name, version, code)` to registry client | Medium | ✅ Done |
+| 302 redirect handling | `Download()` should follow HTTP 302 to canonical URL (notary proxy pattern) | Small | ✅ Done |
+| Version status awareness | Check `active/deprecated/buggy` status before install (reject deprecated/buggy); show in `list`/`info` | Medium | ✅ Done |
 
 #### Phase 1b.3 — Polish & Conformance
 
-| Gap | Task | Est. effort |
-|-----|------|-------------|
-| Error format | Standardized `ERROR:<code>:<message>` error output across all commands | Small |
-| `--yes` flag | Implement confirmation prompts for destructive ops; `--yes` skips them | Small |
-| Update via resolver | `cpm update` should use the universal resolver, not just registry (handle git/npm/deno sources) | Medium |
-| Search `--capability` / `--exact` | Additional search filters from spec | Small |
+| Gap | Task | Est. effort | Status |
+|-----|------|-------------|--------|
+| Error format | Standardized `ERROR:<code>:<message>` error output across all commands | Small | ✅ Done |
+| `--yes` flag | Implement confirmation prompts for destructive ops; `--yes` skips them | Small | ✅ Done |
+| Update via resolver | `cpm update` should use the universal resolver, not just registry (handle git/npm/deno sources) | Medium | ✅ Done |
+| Search `--capability` / `--exact` | Additional search filters from spec | Small | ✅ Done |
 
 #### Phase 1b.4 — Feature Completeness
 
-| Gap | Task | Est. effort |
-|-----|------|-------------|
-| Init templates | Add `prompt-only`, `mcp-bridge`, `firmware`, `full` templates to `cpm init --template` | Medium |
-| `info` enhancements | Show source URL, checksum, registry status, dependency tree | Small |
-| `verify` dependency check | Verify referenced dependencies exist in archive | Small |
-| `publish --scope` / `--visibility` | Support scoped packages and visibility flags | Small |
+| Gap | Task | Est. effort | Status |
+|-----|------|-------------|--------|
+| Init templates | Add `prompt-only`, `mcp-bridge`, `firmware`, `full` templates to `cpm init --template` | Medium | ✅ Done |
+| `info` enhancements | Show source URL, checksum, registry status, dependency tree | Small | ✅ Done |
+| `verify` dependency check | Verify referenced dependencies exist in archive | Small | ✅ Done |
+| `publish --scope` / `--visibility` | Support scoped packages and visibility flags | Small | ✅ Done |
 
 #### Phase 1b.5 — Packaging Enhancements
 
