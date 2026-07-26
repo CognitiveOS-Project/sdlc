@@ -85,11 +85,11 @@ All tasks in the initial Phase 1 are implemented and merged to `main`. The CPM C
 
 #### Phase 1b.1 — Core Install Completeness
 
-| Gap | Task | Est. effort |
-|-----|------|-------------|
-| Dependency resolution | Recursively install transitive `dependencies` during `cpm install` using `dep.Resolve()` | Medium |
-| Notary checksum verification | Before install, fetch registry metadata to get recorded SHA-256, verify downloaded archive against it | Medium |
-| Search filters pass-through | Pass `--license`, `--min-ram` flags to registry `Search` API; update `registry.Client.Search()` signature | Small |
+| Gap | Task | Est. effort | Status |
+|-----|------|-------------|--------|
+| Dependency resolution | Recursively install transitive `dependencies` during `cpm install` using `dep.Resolve()` | Medium | ✅ Done |
+| Notary checksum verification | Before install, fetch registry metadata to get recorded SHA-256, verify downloaded archive against it | Medium | ✅ Done |
+| Search filters pass-through | Pass `--license`, `--min-ram` flags to registry `Search` API; update `registry.Client.Search()` signature | Small | ✅ Done |
 
 #### Phase 1b.2 — Registry Protocol Completeness
 
@@ -125,6 +125,15 @@ All tasks in the initial Phase 1 are implemented and merged to `main`. The CPM C
 | Component manifests | Create `cognitive.json` for all core components (bridges, daemon, cli, inference) | Small | ✅ Done |
 | Makefile integration | Update component Makefiles to use manifest-based packaging | Small | ✅ Done |
 
+#### Phase 1b.6 — Publish Paths
+
+| Gap | Task | Est. effort | Status |
+|-----|------|-------------|--------|
+| Official publish (no --download-url) | Multipart upload of .cgp binary to registry, GitHub Release creation | Medium | ✅ Done |
+| Notary proxy (--download-url) | JSON metadata publish with external download URL | Small | ✅ Done |
+| Auth.json fallback | `cpm publish` falls back to stored key path from `cpm auth login` | Small | ✅ Done |
+| 32MB size guard | Reject official publish for .cgp archives exceeding 32 MB, suggest UPR flow | Small | ✅ Done |
+
 ### Phase 1c: Auth System — Machine Identity & Login
 
 **Repos:** `cpm`, `registry-server`
@@ -135,23 +144,27 @@ All tasks in the initial Phase 1 are implemented and merged to `main`. The CPM C
 |------|------|-------------|--------|
 | `PUT /v1/auth/status` endpoint | registry-server | Small | ✅ Done |
 | `POST /v1/auth/signup` endpoint | registry-server | Medium | ✅ Done |
-| Machine identity profile store (Memory + S3) | registry-server | Medium | ✅ Done |
+| MachineKeyStore interface + Memory/S3 implementations | registry-server | Medium | ✅ Done |
 | `internal/config/auth.go` — LoadAuth, SaveAuth, RemoveAuth | cpm | Small | ✅ Done |
 | `cpm auth login` — stores key path, verifies on server | cpm | Small | ✅ Done |
 | `cpm auth logout` — clears local auth state | cpm | Small | ✅ Done |
 | `cpm auth signup` — gathers machine profile, signs + sends | cpm | Medium | ✅ Done |
 | `cpm publish` — fallback to auth.json for key path | cpm | Small | ✅ Done |
+| Auth context propagation (ContextWithFingerprint, ContextWithOwnerKey) | registry-server | Small | ✅ Done |
+| SSHKeyStore interface + Memory/S3 implementations | registry-server | Medium | ✅ Done |
 | Product-specs: cpm-spec.md auth commands | product-specs | Small | ✅ Done |
 | Product-specs: registry-api.md endpoints | product-specs | Small | ✅ Done |
 | Product-specs: ADR-009 flow update | product-specs | Small | ✅ Done |
 
 **Auth flow:**
 ```
-signup → register → login → publish
-   │        │         │        │
-   │        │         │        └─ signs manifest with stored key
+signup → register → login → claim key → grant publish → publish
+   │        │         │          │             │           │
+   │        │         │          │             │           └─ signs manifest with stored key
+   │        │         │          │             └─ owner toggles in Web UI
+   │        │         │          └─ owner links key in Web UI
    │        │         └─ stores key path in ~/.cpm/auth.json, verifies on server
-   │        └─ sends .pub to server, server checks signup approved
+   │        └─ sends .pub to server, server stores in S3
    └─ sends machine profile + .pub, server evaluates rules
 ```
 
@@ -169,9 +182,14 @@ signup → register → login → publish
 | GitHub OAuth client (`ExchangeCode`, `FetchUser`, `AuthURL`) | registry-server | Small | ✅ |
 | Signed cookie session middleware | registry-server | Small | ✅ |
 | Web UI handlers (login, dashboard, key CRUD) | registry-server | Medium | ✅ |
-| HTML templates (login, dashboard) | registry-server | Small | ✅ |
-| Publish gating: check key status = "active" | registry-server | Small | ✅ |
-| Wire OwnerStore in main.go, env vars | registry-server | Small | ✅ |
+| HTML templates (landing, login, dashboard) | registry-server | Small | ✅ |
+| Key CRUD (add, revoke, activate, remove) | registry-server | Small | ✅ |
+| Publish permission toggle (grant-publish, revoke-publish) | registry-server | Small | ✅ |
+| Landing page at /ui/ | registry-server | Small | ✅ |
+| Templates embedded via //go:embed | registry-server | Small | ✅ |
+| Dashboard URLs use integer index (not fingerprint) | registry-server | Small | ✅ |
+| Publish gating: KEY_NOT_CLAIMED, KEY_REVOKED, PUBLISH_NOT_AUTHORIZED | registry-server | Small | ✅ |
+| Wire OwnerStore + MachineStore in main.go, env vars | registry-server | Small | ✅ |
 
 **Owner identity flow:**
 ```
@@ -532,18 +550,24 @@ The registry is a **notary proxy** — it does not host `.cgp` files. Publishers
 | `POST /v1/patches/{name}/{version}/validate` — re-run A1-A10 on stored manifest | registry-api | Small | ✅ Done |
 | `GET /v1/patches/{name}/dependencies` — dependency tree for a package | registry-api | Small | ✅ Done |
 | File-backed store (JSON file, survives restarts, SQLite adapter interface ready) | None | Medium | ✅ Done |
-| `POST .../unlock` — unlock code verification | registry-api | Medium | Partial |
+| `POST .../unlock` — unlock code verification | registry-api | Medium | ✅ Done |
 | SQLite metadata index (upgrade from file-backed JSON) | None | Medium | Pending |
 | cgp-template with sample patch | cgp-format spec | Small | ✅ Done |
 | cgp-template README and documentation | None | Small | ✅ Done |
 | Registry API spec documenting notary proxy (no file hosting) | — | Small | ✅ Done |
 | `publish-cgp.sh` updated for notary pattern (JSON + sha256 + download-url) | — | Small | ✅ Done |
+| E2E tests (`e2e_test.go`) — 54 assertions, 16 scenarios | registry-server | Medium | ✅ Done |
+| Publish flow tutorial (`tutorials/cgp-publishing.md`) | product-specs | Small | ✅ Done |
+| SSH keys persist to S3 (S3SSHKeyStore) | registry-server | Small | ✅ Done |
+| Session secret persists via `CRS_SESSION_SECRET` env var | registry-server | Small | ✅ Done |
+| Official publish: `auto_init=true` + `ensureNotEmpty` | registry-server | Small | ✅ Done |
+| Dashboard URLs use integer index (not fingerprint) | registry-server | Small | ✅ Done |
 
 **Definition of done:**
 - `cpm search email` returns results from the registry ✅
 - `cpm publish ./skill.cgp --download-url <url>` registers checksum in registry ✅
 - `cpm install <name>` downloads from `download_url` after registry redirect ✅
-- Unlock code flow works end-to-end ⬜ (stub implementation)
+- Unlock code flow works end-to-end ✅
 - A1-A10 validation rejects malformed publishes at registry level ✅
 - `cpm init my-skill` creates a valid .cgp skeleton ✅
 
