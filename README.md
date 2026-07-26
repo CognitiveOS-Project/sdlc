@@ -15,8 +15,48 @@ Software Development Life Cycle documentation for the CognitiveOS project.
 | `workflow/code-review.md` | Code review standards and checklist |
 | `workflow/testing.md` | Testing strategy across all layers |
 | `workflow/ci-cd.md` | CI/CD pipeline definitions |
-| `adr/` | Architecture Decision Records |
 | `standards/` | Coding standards and conventions |
+
+Architecture Decision Records live in [product-specs/adr/](https://github.com/CognitiveOS-Project/product-specs/tree/main/adr) (ADR-003 through ADR-009).
+
+## Implementation Phases
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1 | CPM core (init, install, list, search, verify, update) | ✅ |
+| 1b | CPM gap closure (pack, download-weights, deps, config, schema) | ✅ |
+| 1c | Auth system (signup, login, register, key fallback) | ✅ |
+| 1d | Web UI (GitHub OAuth, dashboard, key management) | ✅ |
+| 1e | Publish gating & unlock codes | ✅ |
+| 2 | Hardware bridges (MCP servers) | ✅ |
+| 2b | Bridge spec compliance | ✅ |
+| 3 | Inference engine (Ollama-compatible API) | ~90% |
+| 3b | Inference spec compliance | ✅ |
+| 4 | System daemon (cognitiveosd) | ~95% |
+| 4b | Daemon spec compliance | ✅ |
+| 5 | CLI/TUI | ~85% |
+| 5b | CLI spec compliance | ~70% |
+| 6 | Distribution image (Alpine) | ✅ |
+| 6b | coginit PID 1 (unified boot) | ✅ |
+| 7 | Registry & ecosystem | ✅ |
+| 8 | Autonomous package management | Partially spec'd |
+
+## Milestones
+
+| Milestone | Description | Status |
+|-----------|-------------|--------|
+| M0 | Core CPM + registry bootstrap | ✅ |
+| M1 | Inference engine + MCP bridges | ✅ |
+| M1b | Registry server (S3, SSH auth, notary) | ✅ |
+| M2 | System daemon + CLI/TUI | ✅ |
+| M2b | Web UI + auth system | ✅ |
+| M3 | Distribution image + coginit | ✅ |
+| M4 | Registry ecosystem (schemas, gates, unlock) | ✅ |
+| M5 | Hardware bridges spec compliance | ✅ |
+| M6 | Inference spec compliance | ✅ |
+| M7 | CLI spec compliance | In progress |
+
+See `plan/milestones.md` for detailed deliverables and timeline.
 
 ## Related
 
@@ -35,7 +75,13 @@ Read the guides in `workflow/` before submitting changes:
 - [`workflow/testing.md`](workflow/testing.md) — testing strategy across all layers
 - [`workflow/ci-cd.md`](workflow/ci-cd.md) — CI/CD pipeline definitions
 
-All repos in the CognitiveOS project work directly on `main`: branch from `main`, PR to `main`, merge after review.
+All repos follow the git workflow defined in root `.opencode/instructions/git-workflow.md`:
+
+1. Branch from `development`, not `main`
+2. Use topic branches: `feature/<name>`, `fix/<name>`, `bugfix/<name>`
+3. Open a PR to `development` with a clear title and description
+4. Merge via squash after review
+5. Changes flow to `main` via a release PR
 
 ## Author
 
