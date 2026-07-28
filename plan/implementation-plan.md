@@ -601,6 +601,129 @@ The registry is a **notary proxy** — it does not host `.cgp` files. Publishers
 - Base system prompt tells the Wide Model it can autonomously install capabilities
 - All 6 package tools are registered and discoverable via `mcp.list_tools`
 
+### Phase 9: Secret Management
+
+**Repos:** `cpm`
+
+**Goal:** CPM-native secret management for storing API keys, tokens, and credentials. Secrets are resolved at install time — archives always contain `${VAR}` placeholders, installed manifests have real values. The daemon and coginfer never know about secrets.
+
+**Architecture decisions (ADR-010):**
+- Patch scope: `/cognitiveos/lib/cpm/secrets/<patch-name>/secrets.json` (survives `cpm remove`)
+- Global scope: `~/.cpm/secrets.json` (survives everything)
+- Default scope: `patch`
+- Merge: patch overrides global
+- Resolution: centralized `ResolveSecrets()` called at install time only
+
+| Task | Dependencies | Est. effort | Status |
+|------|-------------|-------------|--------|
+| `internal/config/secrets.go` — Secrets struct, LoadSecrets, SaveSecrets, MergeSecrets | None | Medium | Done |
+| `internal/config/secrets_test.go` — unit tests for store operations | secrets.go | Small | Done |
+| `internal/archive/secrets.go` — ResolveSecrets, ResolveManifest (centralized resolver) | None | Medium | Done |
+| `internal/archive/secrets_test.go` — unit tests for resolution | secrets.go | Small | Done |
+| `cmd/secret.go` — add, list, remove, get subcommands | secrets.go | Medium | Done |
+| `cmd/secret_test.go` — integration tests for CLI | secret.go | Small | Done |
+| Wire ResolveManifest into `cmd/install.go` (after extract, before move) | secrets.go, archive | Small | Done |
+| Filesystem hierarchy update: add `/cognitiveos/lib/cpm/secrets/` | product-specs | Small | Done |
+| ADR-010: Cloud Models & Secret Management | product-specs | Small | Done |
+
+**Secret resolution flow:**
+```
+Archive (.cgp)                Install time                Installed manifest
+───────────────               ────────────                ──────────────────
+${API_KEY} in manifest  ──►  ResolveSecrets() resolves  ──►  "sk-abc123" in cognitive.json
+   (placeholder)             via merged secrets store         (real value)
+```
+
+**Scope layout:**
+```
+/cognitiveos/lib/cpm/
+├── queue/                          # Existing (dependency install queue)
+│   ├── build/
+│   ├── boot/
+│   ├── install/
+│   └── runtime/
+└── secrets/                        # NEW
+    └── <patch-name>/
+        └── secrets.json            # Survives cpm remove, wiped on reset
+```
+
+**Definition of done:**
+- `cpm secret add API_KEY sk-abc123` stores in patch scope
+- `cpm secret list` shows merged patch + global secrets
+- `cpm install` resolves `${API_KEY}` in manifest to real value
+- `cpm remove` preserves secrets; `--purge` deletes them
+- Archives never contain resolved secret values
+
+### Phase 10: Cloud Model Support
+
+**Repos:** `cpm`, `inference`, `cognitiveosd`, `product-specs`
+
+**Goal:** Support consuming models from OpenAI-compatible API providers via `brain.wide_model.weights.cloud`. Add `method` field to `WeightsConfig` to select between `remote` (download), `local` (file in archive), and `cloud` (API provider). Coginfer gets a cloud backend — daemon stays unchanged via WideModelClient.
+
+**Architecture decisions (ADR-010):**
+- `method` lives on `WeightsConfig` alongside `remote`/`local`/`cloud`
+- Cloud inference in coginfer (separation of concerns)
+- Daemon always calls WideModelClient — no knowledge of where model lives
+- `cpm install` tests API reachability (TCP/HTTP HEAD, not full request)
+
+| Task | Dependencies | Est. effort | Status |
+|------|-------------|-------------|--------|
+| Manifest struct: add `Method`, `LocalWeights`, `CloudWeights` to `WeightsConfig` | None | Medium | Done |
+| JSON Schema: add `method`, `local`, `cloud` to `$defs.weights` | Manifest struct | Small | Done |
+| `cpm/cmd/pack.go`: handle `local.path` in `collectManifestRefs()` | Manifest struct | Small | Done |
+| `cpm/cmd/install.go`: early return for `method == "cloud"` or `"local"` | Manifest struct | Small | Done |
+| `cpm/cmd/install.go`: cloud API reachability check | Manifest struct | Small | Done |
+| `inference/internal/cloud/provider.go` — OpenAI-compatible client | None | Medium | Done |
+| `inference/internal/cloud/provider_test.go` — mock HTTP tests | provider.go | Small | Pending |
+| `inference/internal/engine/engine.go` — cloud backend selection | provider.go | Medium | Done |
+| `inference/internal/config/config.go` — add Cloud* config fields | None | Small | Done |
+| `cognitiveosd/internal/config/config.go` — cloud fields in TOML | None | Small | Done |
+| Product-specs: manifest-fields.md update | Manifest struct | Small | Done |
+| Product-specs: cpm-spec.md update | Manifest struct | Small | Done |
+| Product-specs: cgp-format.md update | Manifest struct | Small | Done |
+
+**Manifest examples:**
+```json
+{
+  "brain": {
+    "wide_model": {
+      "weights": {
+        "method": "cloud",
+        "cloud": {
+          "api_base": "https://api.openai.com/v1",
+          "model_id": "gpt-4o-mini",
+          "api_key": "${OPENAI_API_KEY}"
+        }
+      }
+    }
+  }
+}
+```
+
+**Definition of done:**
+- `method: "cloud"` skips weight download, tests API reachability
+- `method: "local"` includes weight file from `weights/` dir in archive
+- `method: "remote"` preserves existing HuggingFace download behavior
+- Coginfer cloud backend generates completions via OpenAI-compatible API
+- Daemon passes cloud config to coginfer — no WideModelClient changes
+- All three methods work end-to-end
+
+### Phase 11: Tutorial — Sandboxed CGP Building
+
+**Repos:** `product-specs`
+
+**Goal:** End-to-end tutorial covering CI/CD pipeline for CGP packages using the official cognitiveos dev Docker image.
+
+| Task | Dependencies | Est. effort | Status |
+|------|-------------|-------------|--------|
+| `tutorials/sandboxed-cgp-build.md` — full CI pipeline demo | None | Medium | Pending |
+| Cover: dev image, Dockerfile.ci, GitHub Actions, local dev workflow | — | — | Pending |
+
+**Definition of done:**
+- Tutorial walks through cgp-template CI/CD flow
+- Covers both CGP developers and CognitiveOS contributors
+- Includes Docker-based local development and GitHub Actions automation
+
 ## Build Order with Milestones
 
 ```
@@ -626,7 +749,9 @@ M6  ─── Distribution image builds                   (Phase 6)
       │
 M7  ─── Registry online, cpm install from it        (Phase 7)
   │
-M8  ─── v0.1.0 release                             (ALL PHASES)
+M8  ─── Secret management + cloud models            (Phase 9 + 10)
+  │
+M9  ─── v0.1.0 release                             (ALL PHASES)
 ```
 
 ## Risk Register
