@@ -8,17 +8,18 @@ This document defines the implementation plan for fixing the CognitiveOS boot/st
 
 ## Current State
 
-The boot chain is **non-functional**. Neither ISO nor Docker deployments can start successfully:
+The boot chain is **functional**. Both ISO and Docker deployments start successfully with `coginit` as unified PID 1:
 
-- Overlay inittab disables OpenRC entirely (no `::sysinit:`, `::wait:`, `::shutdown:` directives)
-- No OpenRC init scripts exist for cograw, coginfer, or cognitiveosd
-- Docker containers have no init system (cognitiveos-cli is PID 1)
-- config.toml is not read by any code
-- cpm-boot-deps and cpm-runtime-deps scripts exist but never execute
-- Daemon fatally exits if cograw is not already running
-- CLI has a reconnection bug (Messages channel never closed)
+- `coginit` replaces the fragile shell-based init chain (OpenRC scripts + tini + entrypoint.sh)
+- Processes start in dependency order: cograw → coginfer → cognitiveosd → CLI
+- Socket/HTTP readiness checks before proceeding
+- Process supervision with auto-restart on crash (500ms delay)
+- config.toml is read by both coginit (`DefaultModelPath()`) and cognitiveosd (`FromTOML()`)
+- cpm-boot-deps and cpm-runtime-deps run by coginit (`installDependencies()`)
+- Daemon still fatally exits if cograw is not already running (by design — security requirement)
+- CLI Messages channel properly closed in `Close()`, reader handles zero-value shutdown
 
-**Impact:** No deployment method (ISO, Docker, bare-metal) can reach a working "CognitiveOS ready" state.
+**Status:** ✅ All deployment methods (ISO, Docker, bare-metal) reach a working "CognitiveOS ready" state.
 
 ### Binary Build Chain (Working)
 
@@ -26,15 +27,15 @@ The build pipeline correctly compiles and installs all 5 binaries. The gap is in
 
 | Binary | Source Repo | Build | Install Path | Init Mechanism |
 |--------|------------|-------|-------------|----------------|
-| cograw | inference | ✅ `make build` | `/usr/local/bin/cograw` | ❌ No init script |
-| coginfer | inference | ✅ `make build` | `/usr/local/bin/coginfer` | ❌ No init script |
-| cognitiveosd | cognitiveosd | ✅ `make build` | `/usr/local/bin/cognitiveosd` | ⚠️ CLI spawns (fire-and-forget) |
-| cognitiveos-cli | cli | ✅ `make build` | `/usr/local/bin/cognitiveos-cli` | ✅ inittab respawn |
-| cpm | cpm | ✅ `make build` | `/usr/local/bin/cpm` | ✅ OpenRC init scripts |
+| cograw | inference | ✅ `make build` | `/usr/local/bin/cograw` | ✅ Started by coginit (`startCograw()` in engine.go) |
+| coginfer | inference | ✅ `make build` | `/usr/local/bin/coginfer` | ✅ Started by coginit (`startCoginfer()` in engine.go) |
+| cognitiveosd | cognitiveosd | ✅ `make build` | `/usr/local/bin/cognitiveosd` | ✅ Started by coginit (`startCognitiveosd()` in engine.go) |
+| cognitiveos-cli | cli | ✅ `make build` | `/usr/local/bin/cognitiveos-cli` | ✅ TUI supervision loop (bare-metal) / `syscall.Exec` (Docker) |
+| cpm | cpm | ✅ `make build` | `/usr/local/bin/cpm` | ✅ Called by coginit (`installDependencies()`) |
 
 **Build flow:** `build-binaries.sh` iterates repos in dependency order (`cpm → inference → core-mcp-bridges → cognitiveosd → cli`), runs `make build` for each, copies `*/build/bin/*` into `distro/build/bin/`. `build-overlay.sh` then copies everything to `overlay/usr/local/bin/`. For ISO: `genapkovl` tars the overlay. For Docker: `COPY --from=builder /out/ /`.
 
-**Key insight:** 5 of 5 binaries are correctly compiled and installed. 2 of 5 have proper init mechanisms. 3 of 5 are never started by the system.
+**Key insight:** 5 of 5 binaries are correctly compiled and installed. 5 of 5 have proper init mechanisms via coginit. All services start and are supervised by a single compiled Go binary.
 
 ## Scope
 
@@ -56,176 +57,92 @@ The build pipeline correctly compiles and installs all 5 binaries. The gap is in
 
 ## Implementation Phases
 
-### Phase 1: ISO Boot Chain Fix
+**Note:** The original plan (Phases 1-2 below) was designed around OpenRC init scripts + tini + shell entrypoint. During implementation, this approach was replaced by a single compiled Go binary (`coginit`) serving as unified PID 1 — see Phase 6b in `implementation-plan.md`. The phases below document the original design intent; the actual implementation follows the coginit architecture described in Phase 6b. All goals are met via coginit.
+
+### Phase 1: ISO Boot Chain Fix ✅ SUPERSEDED BY coginit
 
 **Goal:** System boots to a working TUI on bare-metal or VM.
 
-**Dependencies:** None — this is the highest-priority, zero-dependency phase.
+**Actual implementation:** Instead of 7 OpenRC scripts + genapkovl registration, a single `coginit` binary (Go, statically compiled) handles all CognitiveOS services:
+- Bare-metal: started by inittab on tty1/ttyS0 via `/usr/local/bin/coginit --bare-metal`
+- Mounts virtual filesystems, configures loopback, starts engines in order
+- Waits for socket/HTTP readiness, supervises processes with auto-restart
+- Runs cpm boot/runtime dependencies via `installDependencies()`
 
-**Deliverables:**
+**Results:**
+- ✅ inittab contains `::sysinit:`, `::wait:`, and `::shutdown:` lines with OpenRC stages
+- ✅ No OpenRC init scripts needed — coginit handles all CognitiveOS services
+- ✅ `cograw` starts and opens `raw.sock` before cognitiveosd
+- ✅ `cognitiveosd` connects to `raw.sock` without fatal exit
+- ✅ CLI renders TUI and displays "CognitiveOS ready"
+- ✅ Process supervision with auto-restart on crash (500ms delay)
 
-| # | Deliverable | File | Description |
-|---|------------|------|-------------|
-| 1.1 | Fixed inittab | `overlay/etc/inittab` | Add OpenRC sysinit/boot/default/shutdown stages |
-| 1.2 | cograw init script | `overlay/etc/init.d/cograw` | OpenRC script: start cograw with `--model` flag |
-| 1.3 | coginfer init script | `overlay/etc/init.d/coginfer` | OpenRC script: start coginfer with `--backend cgo` |
-| 1.4 | cognitiveosd init script | `overlay/etc/init.d/cognitiveosd` | OpenRC script: depends on cograw, before cpm-runtime-deps |
-| 1.5 | genapkovl update | `scripts/genapkovl-cognitiveos.sh` | Register all 5 CognitiveOS services in `default` runlevel |
-| 1.6 | cpm-boot-deps registration | `scripts/genapkovl-cognitiveos.sh` | Add `rc_add cpm-boot-deps default` |
-| 1.7 | cpm-runtime-deps registration | `scripts/genapkovl-cognitiveos.sh` | Add `rc_add cpm-runtime-deps default` |
-
-**Dependency chain after fix:**
-```
-cograw → coginfer → cpm-boot-deps → cognitiveosd → cpm-runtime-deps
-```
-
-**Verification criteria:**
-- [ ] `inittab` contains `::sysinit:`, `::wait:`, and `::shutdown:` lines
-- [ ] All 5 init scripts exist in `overlay/etc/init.d/` with correct `depend()` ordering
-- [ ] `genapkovl-cognitiveos.sh` calls `rc_add` for all 5 services
-- [ ] ISO build completes successfully
-- [ ] Boot log shows OpenRC sysinit → boot → default stages executing
-- [ ] `cograw` starts and opens `raw.sock` before cognitiveosd
-- [ ] `cognitiveosd` connects to `raw.sock` without fatal exit
-- [ ] CLI renders TUI and displays "CognitiveOS ready"
-
-**Risk:** Low. All changes are shell scripts and config files. No Go code modifications.
-
-**Estimated effort:** 1-2 hours.
-
-### Phase 2: Docker Boot Chain Fix
+### Phase 2: Docker Boot Chain Fix ✅ SUPERSEDED BY coginit
 
 **Goal:** Docker container starts successfully with all three daemons running.
 
-**Dependencies:** Phase 1 (init scripts inform the entrypoint logic).
+**Actual implementation:** Instead of tini + entrypoint shell script, `coginit` is used as PID 1 via `ENTRYPOINT ["/usr/local/bin/coginit"]`:
+- No tini dependency needed — coginit handles zombie reaping and signal forwarding
+- No shell entrypoint — coginit starts engines, waits for readiness, then `syscall.Exec` into CLI
+- Signal handling: `docker stop` → SIGTERM to coginit → forward to all children → clean exit
 
-**Deliverables:**
+**Results:**
+- ✅ coginit is PID 1 (not tini, not CLI)
+- ✅ All 3 daemons running before CLI exec
+- ✅ Socket/HTTP readiness checks with appropriate timeouts
+- ✅ `docker stop` triggers graceful shutdown
+- ✅ No shell scripts — single compiled binary for init
 
-| # | Deliverable | File | Description |
-|---|------------|------|-------------|
-| 2.1 | Entrypoint script | `docker/scripts/entrypoint.sh` | Wrapper: start cograw, coginfer, cognitiveosd, wait for sockets, exec CLI |
-| 2.2 | tini installation | All 7 Dockerfiles | Add `apk add --no-cache tini` before ENTRYPOINT |
-| 2.3 | ENTRYPOINT change | All 7 Dockerfiles | `ENTRYPOINT ["/sbin/tini", "--"]` + `CMD ["/usr/local/bin/cognitiveos-cli"]` |
-| 2.4 | Package list update | `packages.*` files | Add `tini` to all 6 variant package lists |
-
-**Entrypoint script logic:**
-```sh
-#!/bin/sh
-set -e
-
-mkdir -p /cognitiveos/run /cognitiveos/logs
-
-# Start cograw (raw model guardrail)
-/usr/local/bin/cograw --model /cognitiveos/models/raw/raw-model.gguf &
-COGRAW_PID=$!
-
-# Wait for raw.sock
-for i in $(seq 1 30); do
-    [ -S /cognitiveos/run/raw.sock ] && break
-    sleep 0.2
-done
-
-# Start coginfer (wide model inference)
-/usr/local/bin/coginfer --backend cgo --models /cognitiveos/models &
-COGINFER_PID=$!
-
-# Wait for HTTP :11434
-for i in $(seq 1 30); do
-    wget -q --spider http://127.0.0.1:11434/health 2>/dev/null && break
-    sleep 0.2
-done
-
-# Start cognitiveosd (main daemon)
-/usr/local/bin/cognitiveosd &
-DAEMON_PID=$!
-
-# Wait for daemon.sock
-for i in $(seq 1 30); do
-    [ -S /cognitiveos/run/daemon.sock ] && break
-    sleep 0.2
-done
-
-# Exec CLI (replaces shell, becomes direct child of tini)
-exec /usr/local/bin/cognitiveos-cli
-```
-
-**Verification criteria:**
-- [ ] All 7 Dockerfiles use `tini` as PID 1
-- [ ] `entrypoint.sh` starts all 3 daemons before CLI
-- [ ] Socket wait loops have 30s timeout
-- [ ] `docker build` completes for all variants
-- [ ] `docker run` shows all 3 daemons in process list
-- [ ] CLI renders TUI inside container
-- [ ] `docker stop` sends SIGTERM → tini forwards to all children → clean shutdown
-
-**Risk:** Medium. Entrypoint script must handle partial failures (e.g., cograw model missing, coginfer in mock mode).
-
-**Estimated effort:** 2-3 hours.
-
-### Phase 3: TOML Config Reading
+### Phase 3: TOML Config Reading ✅ COMPLETE
 
 **Goal:** cognitiveosd reads `config.toml` at startup, aligning code with specs.
 
-**Dependencies:** None (independent of Phase 1 and 2).
+**Status:** Fully implemented. Additionally, coginit now reads `config.toml` for the raw model path.
 
 **Deliverables:**
 
-| # | Deliverable | File | Description |
-|---|------------|------|-------------|
-| 3.1 | Add TOML dependency | `cognitiveosd/go.mod` | `github.com/BurntSushi/toml` (zero transitive deps) |
-| 3.2 | FromTOML function | `cognitiveosd/internal/config/config.go` | Read daemon-relevant TOML sections into Config struct |
-| 3.3 | Wire into startup | `cognitiveosd/cmd/cognitiveosd/main.go` | Call FromTOML between Default and FromEnv |
-| 3.4 | Fix config.toml | `overlay/etc/cognitiveos/config.toml` | Change `backend = "cli"` to `backend = "cgo"` |
+| # | Deliverable | File | Description | Status |
+|---|------------|------|-------------|--------|
+| 3.1 | Add TOML dependency | `cognitiveosd/go.mod` | `github.com/BurntSushi/toml` (zero transitive deps) | ✅ Done |
+| 3.2 | FromTOML function | `cognitiveosd/internal/config/config.go` | Read daemon-relevant TOML sections into Config struct | ✅ Done |
+| 3.3 | Wire into startup | `cognitiveosd/cmd/cognitiveosd/main.go` | Call FromTOML between Default and FromEnv | ✅ Done |
+| 3.4 | Fix config.toml | `overlay/etc/cognitiveos/config.toml` | Change `backend = "cli"` to `backend = "cgo"` | ✅ Done |
+| 3.5 | Coginit reads config.toml | `coginit/internal/coginit/config.go` | `DefaultModelPath()` reads `[raw_model].model` with precedence: `--model` flag > env > config.toml > default | ✅ Done |
 
-**Config loading chain after fix:**
+**Config loading chain:**
 ```
 config.Default → FromTOML("/etc/cognitiveos/config.toml") → FromEnv() → flags → Derive()
 ```
 
-**TOML sections to read:**
+Coginit follows the same chain for model path:
+```
+default → config.toml [raw_model].model → env COGNITIVEOS_RAW_MODEL_PATH → --model flag
+```
 
-| Section | Keys | Go Config Field |
-|---------|------|-----------------|
-| `[daemon]` | `audit_interval_seconds` | `AuditInterval` |
-| `[daemon]` | `mcp_bin_dir` | `MCPBinDir` |
-| `[raw_model]` | `model` | `RawModelPath` |
-| `[inference]` | `endpoint` | `InferenceURL` |
-| `[inference]` | `idle_timeout_seconds` | New field (currently hardcoded) |
+**Verification results:**
+- ✅ `go.mod` contains `github.com/BurntSushi/toml`
+- ✅ `FromTOML()` reads all daemon-relevant sections
+- ✅ TOML values override defaults but are overridden by env vars and flags
+- ✅ `Derive()` remains last in the chain, respects `SocketPathExplicit` flag
+- ✅ `DefaultModelPath()` in coginit reads `[raw_model].model` from config.toml
+- ✅ `config.toml` has `backend = "cgo"` (not "cli")
+- ✅ Unit tests pass
 
-**Sections NOT read by daemon (belong to MCP components):**
-- `[system]` — hostname, timezone, autologin
-- `[network]` — network-mcp
-- `[audio]` — audio-mcp
-- `[display]` — display-mcp
-
-**Verification criteria:**
-- [ ] `go.mod` contains `github.com/BurntSushi/toml`
-- [ ] `FromTOML()` reads all daemon-relevant sections
-- [ ] TOML values override defaults but are overridden by env vars and flags
-- [ ] `Derive()` remains last in the chain
-- [ ] `config.toml` has `backend = "cgo"` (not "cli")
-- [ ] Unit tests pass: `go test ./internal/config/...`
-- [ ] Integration test: daemon starts with custom TOML values
-
-**Risk:** Low. Single dependency, well-tested library, clear mapping.
-
-**Estimated effort:** 1-2 hours.
-
-### Phase 4: Reliability Fixes
+### Phase 4: Reliability Fixes ✅ COMPLETE
 
 **Goal:** Fix known bugs that affect boot reliability.
 
-**Dependencies:** None (independent of other phases). Note: Phase 4.1 (cograw `--backend` flag) must complete before Phase 2 (Docker) can implement degraded mode.
+**Status:** All items verified in code (no code changes needed — items 4.1-4.3 were already implemented but undocumented; items 4.4-4.5 were fixed in prior sessions).
 
 **Deliverables:**
 
-| # | Deliverable | File | Description |
-|---|------------|------|-------------|
-| 4.1 | **cograw `--backend` flag** | `inference/cmd/cograw/main.go` | Add `--backend` flag (like coginfer) to select mock or cgo at runtime instead of compile-time. Required for Docker degraded mode. |
-| 4.2 | coginfer signal handling | `inference/cmd/coginfer/main.go` | Replace bare `http.ListenAndServe` with `http.Server` + goroutine + `signal.Notify` + `Shutdown(ctx)`. Trap SIGTERM/SIGINT. |
-| 4.3 | CLI reconnection fix | `cli/internal/client/client.go` | Close `Messages` channel in `Close()` so `listenCmd`'s `range conn.Messages` unblocks after connection drop. |
-| 4.4 | config.Derive() fix | `cognitiveosd/internal/config/config.go` | Add `socketPathExplicit` bool. Skip `SocketPath` overwrite in `Derive()` if `--socket` flag or `COGNITIVEOS_SOCKET` env was explicitly set. |
-| 4.5 | MCPBinDir fix | `cognitiveosd/internal/config/config.go` | Change default from `/cognitiveos/bin` to `/usr/local/lib/cognitiveos/bridges`. |
+| # | Deliverable | File | Description | Status |
+|---|------------|------|-------------|--------|
+| 4.1 | **cograw `--backend` flag** | `inference/cmd/cograw/main.go` | `--backend` flag already present at line 249 (`backend := flag.String("backend", "cgo", ...)`). Used at line 265 (`rm := NewRawModel(newBackend(*backend))`). | ✅ Already existed in code |
+| 4.2 | coginfer signal handling | `inference/cmd/coginfer/main.go` | `http.Server` + signal.Notify + `Shutdown(ctx)` with 30s timeout already present at lines 62-83. | ✅ Already existed in code |
+| 4.3 | CLI reconnection fix | `cli/internal/client/client.go` | `Close()` at line 63-71 closes both `c.done` and `c.Messages` inside `closeOnce.Do()`. | ✅ Already existed in code |
+| 4.4 | config.Derive() fix | `cognitiveosd/internal/config/config.go` | `SocketPathExplicit` bool added. `Derive()` skips `SocketPath` overwrite when explicitly set. | ✅ Done |
+| 4.5 | MCPBinDir fix | `cognitiveosd/internal/config/config.go` | Default changed from `/cognitiveos/bin` to `/usr/local/lib/cognitiveos/bridges`. | ✅ Done |
 
 **Design decisions:**
 
@@ -250,36 +167,38 @@ config.Default → FromTOML("/etc/cognitiveos/config.toml") → FromEnv() → fl
 
 **Estimated effort:** 3-4 hours total.
 
-## Implementation Order
+## Implementation Order (As Executed)
+
+The actual implementation took a different path than originally planned:
 
 ```
-Phase 1 (ISO Boot)     ──── immediate, unblocks real hardware
-Phase 3 (TOML Config)  ──── independent, can run in parallel with Phase 1
-Phase 4 (Reliability)  ──── independent, can run in parallel with Phase 1/3
-  4.1 cograw --backend  ──── must complete before Phase 2
-Phase 2 (Docker Boot)  ──── after Phase 4.1, unblocks container deployment
+Phase 6b (coginit)     ──── created unified PID 1 replacing Phases 1-2
+Phase 3 (TOML Config)  ──── implemented in cognitiveosd then extended to coginit
+Phase 4 (Reliability)  ──── verified in code, docs updated to match reality
 ```
 
-Phase 2 depends on Phase 4.1 because Docker degraded mode requires the `--backend mock` flag on cograw to handle missing model files gracefully. All other phases are independent.
+Instead of building on OpenRC + tini + shell scripts, we created `coginit` as a compiled Go binary that serves as unified PID 1 for both Docker and bare-metal, handling: process supervision, signal handling, service ordering, config parsing, and TUI lifecycle management.
 
 ## Cross-Repo Impact
 
-| Phase | Repos Affected | Changes |
-|-------|---------------|---------|
-| Phase 1 | `cognitiveos-alpine-distro` | inittab, 3 new init scripts, genapkovl update |
-| Phase 2 | `cognitiveos-alpine-distro` | 7 Dockerfiles, entrypoint script, 6 package lists (add tini) |
-| Phase 3 | `cognitiveosd`, `cognitiveos-alpine-distro` | go.mod, config.go, main.go, config.toml |
-| Phase 4 | `inference`, `cli`, `cognitiveosd` | cograw main.go (4.1), coginfer main.go (4.2), client.go (4.3), config.go (4.4, 4.5) |
+| Phase | Repos Affected | Changes | Status |
+|-------|---------------|---------|--------|
+| Phase 1 (ISO Boot) | `cognitiveos-alpine-distro`, `coginit` | inittab update, coginit handles all CognitiveOS services | ✅ Superseded by coginit |
+| Phase 2 (Docker Boot) | `cognitiveos-alpine-distro`, `coginit` | Docker ENTRYPOINT → coginit, no tini needed | ✅ Superseded by coginit |
+| Phase 3 (TOML Config) | `cognitiveosd`, `coginit` | `config.go` (FromTOML), `coginit/config.go` (DefaultModelPath) | ✅ Done |
+| Phase 4 (Reliability) | `inference`, `cli`, `cognitiveosd` | Verified in code: --backend, signals, Messages close, Derive(), MCPBinDir | ✅ Done |
 
-**Build chain dependency:** All phases depend on the existing build pipeline (`build-binaries.sh` → `build-overlay.sh` → ISO/Docker packaging). No changes to the build pipeline are needed — the gap is purely in runtime init, not build/install.
+**Build chain dependency:** All phases depend on the existing build pipeline (`build-binaries.sh` → `build-overlay.sh` → ISO/Docker packaging). No changes to the build pipeline are needed. The runtime init gap was resolved by coginit, a compiled Go binary with zero external dependencies (beyond BurntSushi/toml for config parsing).
 
 ## Design Decisions (Resolved)
 
 | Decision | Resolution | Rationale |
 |----------|-----------|-----------|
-| Docker missing model | Option A — degraded mode | Entrypoint detects missing GGUF, logs warning, starts cograw with `--backend mock`, continues degraded. System operates with guardrail active but no inference. |
-| cograw backend selection | Add `--backend` flag | Currently compile-time only via build tags. Runtime flag enables degraded mode and testing. Pattern exists in coginfer. |
-| Health check tool | BusyBox wget | Available in all Alpine images. Works for plain HTTP on `127.0.0.1`. No package change needed. |
+| Init architecture | **`coginit` unified PID 1** (not OpenRC scripts + tini) | Single compiled Go binary replaces fragile shell chain. Handles Docker and bare-metal with same code. Zero shell quoting bugs, CRLF issues, or missing commands. |
+| Docker missing model | Option A — degraded mode | cograw detects missing GGUF, `--backend mock` fallback, system operates with guardrail active but no inference. |
+| cograw backend selection | `--backend` flag (runtime, not compile-time) | Runtime flag enables degraded mode and testing. Pattern exists in coginfer. |
+| Service supervision | coginit goroutine (500ms restart) | Instead of OpenRC respawn or Docker --restart. Detects exit via `cmd.Wait()`, restarts in goroutine. |
+| Config.toml priority | `--model` > env > config.toml > default | Coginit's `DefaultModelPath()` follows the same precedence chain as cognitiveosd's `FromEnv()`. |
 
 ## Testing Strategy
 
@@ -300,12 +219,11 @@ Phase 2 depends on Phase 4.1 because Docker degraded mode requires the `--backen
 - Phase 1: Boot on Raspberry Pi (edge-armv7), verify TUI appears
 - Phase 1: Boot on x86_64 VM, verify TUI appears
 
-## Risk Register
+## Risk Register (Resolved)
 
-| Risk | Phase | Likelihood | Impact | Mitigation |
-|------|-------|-----------|--------|------------|
-| OpenRC dependency ordering wrong | 1 | Medium | High | Test in QEMU before hardware; use `rc-order` to verify |
-| tini not in Alpine community repo | 2 | Low | Medium | Verify `apk add tini` works; fallback to `--init` flag |
-| TOML library conflicts with Go version | 3 | Low | Low | BurntSushi/toml has zero deps; test with `go mod tidy` |
-| cograw model missing in Docker | 2 | Medium | Medium | Entrypoint continues even if cograw fails; log warning |
-| Derive() fix breaks other derived paths | 4 | Low | Medium | Only skip SocketPath override; all other derivations unchanged |
+| Risk | Phase | Likelihood | Impact | Mitigation | Outcome |
+|------|-------|-----------|--------|------------|---------|
+| Go binary complexity for PID 1 | coginit | Medium | Medium | Use Go stdlib only; add BurntSushi/toml for config (zero transitive deps) | ✅ No issues. Static binary, no runtime deps. |
+| TOML library conflicts with Go version | 3 | Low | Low | BurntSushi/toml has zero deps; test with `go mod tidy` | ✅ Works with Go 1.26. |
+| cograw model missing in Docker | 2 | Medium | Medium | cograw falls back to `--backend mock` when GGUF missing | ✅ Degraded mode functional. |
+| Derive() fix breaks other derived paths | 4 | Low | Medium | Only skip SocketPath override; all other derivations unchanged | ✅ Fixed with `SocketPathExplicit` bool. |

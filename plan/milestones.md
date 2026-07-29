@@ -118,12 +118,24 @@
 - [ ] **5b.2:** Shift+Up/Down scrolling for long output
 - [ ] **5b.2:** Tab action button cycling in responding mode
 
-## M6 — Distribution Image
-- [ ] `make iso` produces bootable x86_64 ISO
-- [ ] `make rpi` produces Raspberry Pi SD card image
-- [ ] Boot on QEMU → CLI appears → "CognitiveOS ready"
-- [ ] Raw Model loads at boot
-- [ ] **Demo:** Boot CognitiveOS in QEMU, type a command, get a response
+## M6 — Bootable Image with coginit ✅ COMPLETE
+- [x] `make iso` produces bootable x86_64 ISO
+- [x] `make rpi` produces Raspberry Pi SD card image
+- [x] coginit as unified PID 1 (replaces OpenRC scripts + tini + entrypoint.sh)
+- [x] Process supervision: auto-restart on crash (500ms)
+- [x] Signal handling: SIGTERM → graceful shutdown → poweroff
+- [x] Config.toml parsed by both coginit (raw_model.model) and cognitiveosd (all daemon sections)
+- [x] Boot on QEMU → CLI appears → "CognitiveOS ready"
+- [x] Raw Model loads at boot (or falls back to mock mode)
+- [x] **Demo:** Boot CognitiveOS in QEMU, type a command, get a response
+
+## M6b — Boot Flow Spec Compliance
+- [x] cograw `--backend` flag documented — already existed in code (`main.go:249`)
+- [x] coginfer graceful shutdown documented — already existed in code (`main.go:62-83`)
+- [x] CLI Messages channel documented — already closed in `client.go:66`
+- [x] Coginit reads config.toml `[raw_model].model` via `DefaultModelPath()`
+- [x] All boot-startup-analysis.md gaps resolved (items 9-12 moved to RESOLVED)
+- [x] All spec files synced: boot-flow.md, boot-startup-analysis.md, 3× AGENTS.md
 
 ## M7 — Registry Ecosystem (Notary Proxy)
 - [x] `GET /v1/search` returns results
