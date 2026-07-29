@@ -112,11 +112,13 @@ for repo in $REPOS; do
         fi
     fi
 
-    # fetch, tag, push — subshell for isolation
+    # fetch, checkout main/master, pull, tag (with force), push — subshell for isolation
     if (cd "$target" && \
         git fetch --tags --force origin 2>/dev/null && \
-        git tag -a "$VERSION" -m "$MSG" 2>/dev/null && \
-        git push origin "$VERSION" 2>/dev/null); then
+        (git checkout main 2>/dev/null || git checkout master 2>/dev/null || true) && \
+        (git pull origin main 2>/dev/null || git pull origin master 2>/dev/null || true) && \
+        git tag -fa "$VERSION" -m "$MSG" 2>/dev/null && \
+        git push origin "$VERSION" --force 2>/dev/null); then
         echo "  $repo_label✓ $VERSION"
         echo "$repo  ✓ $VERSION" >> "$RESULTS_FILE"
         SUCCEEDED=$((SUCCEEDED + 1))
