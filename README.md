@@ -6,15 +6,14 @@ Software Development Life Cycle documentation for the CognitiveOS project.
 
 | Path | Description |
 |------|-------------|
-| `plan/implementation-plan.md` | Full build plan with phases, dependencies, and deliverables |
-| `plan/boot-startup-analysis.md` | Boot/startup lifecycle implementation plan — phases, deliverables, verification |
-| `plan/boot-flow-verification.md` | Boot flow verification plan — step-by-step test procedures for ISO and Docker |
-| `plan/milestones.md` | Milestone tracking and progress |
-| `plan/risks.md` | Risk register and mitigation strategies |
-| `workflow/contribution-guide.md` | How to contribute to CognitiveOS repos |
-| `workflow/code-review.md` | Code review standards and checklist |
-| `workflow/testing.md` | Testing strategy across all layers |
-| `workflow/ci-cd.md` | CI/CD pipeline definitions |
+| [`plan/implementation-plan.md`](plan/implementation-plan.md) | Full build plan with phases, dependencies, and deliverables |
+| [`plan/boot-startup-analysis.md`](plan/boot-startup-analysis.md) | Boot/startup lifecycle implementation plan — phases, deliverables, verification |
+| [`plan/boot-flow-verification.md`](plan/boot-flow-verification.md) | Boot flow verification plan — step-by-step test procedures for ISO and Docker |
+| [`plan/milestones.md`](plan/milestones.md) | Milestone tracking and progress |
+| [`workflow/contribution-guide.md`](workflow/contribution-guide.md) | How to contribute to CognitiveOS repos |
+| [`workflow/code-review.md`](workflow/code-review.md) | Code review standards and checklist |
+| [`workflow/testing.md`](workflow/testing.md) | Testing strategy across all layers |
+| [`workflow/ci-cd.md`](workflow/ci-cd.md) | CI/CD pipeline definitions |
 | [`product-specs/specs/`](https://github.com/CognitiveOS-Project/product-specs/tree/main/specs) | Coding standards, protocol definitions, and specifications |
 
 Architecture Decision Records and specifications live in [product-specs](https://github.com/CognitiveOS-Project/product-specs) (`adr/` and `specs/`).
