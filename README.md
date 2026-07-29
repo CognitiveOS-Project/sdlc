@@ -15,9 +15,9 @@ Software Development Life Cycle documentation for the CognitiveOS project.
 | `workflow/code-review.md` | Code review standards and checklist |
 | `workflow/testing.md` | Testing strategy across all layers |
 | `workflow/ci-cd.md` | CI/CD pipeline definitions |
-| `standards/` | Coding standards and conventions |
+| [`product-specs/specs/`](https://github.com/CognitiveOS-Project/product-specs/tree/main/specs) | Coding standards, protocol definitions, and specifications |
 
-Architecture Decision Records live in [product-specs/adr/](https://github.com/CognitiveOS-Project/product-specs/tree/main/adr) (ADR-003 through ADR-009).
+Architecture Decision Records and specifications live in [product-specs](https://github.com/CognitiveOS-Project/product-specs) (`adr/` and `specs/`).
 
 ## Implementation Phases
 
