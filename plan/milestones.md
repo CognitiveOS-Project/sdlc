@@ -51,7 +51,7 @@
 - [x] **2b.1:** Display render_image `fit` parameter
 - [x] **2b.2:** Spec-aligned error codes per bridge (E_BUSY, E_NO_DEVICE, etc.)
 - [x] **2b.2:** Logging to `/cognitiveos/logs/bridges/<name>.log`
-- [ ] **2b.2:** Resource cost annotations on tools
+- [x] **2b.2:** Resource cost annotations on tools
 - [x] **2b.3:** Bridge error envelope format (`ERROR:<CODE>:<message>`)
 - [x] **2b.3:** `outputSchema` in tool metadata
 - [x] **2b.3:** `--version` flag on all bridges
@@ -75,7 +75,7 @@
 - [x] **3b.1:** Resource negotiation reads real `/proc/meminfo`
 - [x] **3b.2:** cograw `--version` flag
 - [x] **3b.2:** cograw cooldown timing fix (5-min lockout per spec)
-- [ ] **3b.2:** Status endpoint queries raw socket for raw_model info
+- [x] **3b.2:** Status endpoint queries raw socket for raw_model info
 
 ## M4 — Integrated System
 - [x] cognitiveosd runs as PID 1 or supervised daemon
@@ -87,7 +87,7 @@
 - [x] Hardware audit runs on interval
 - [ ] **Demo:** End-to-end: "Show me photo" → AI calls display-mcp → photo appears
 
-## M4b — Daemon Spec Compliance ✅ MOSTLY COMPLETE
+## M4b — Daemon Spec Compliance ✅ COMPLETE
 - [x] **4b.1:** Bridge error format: MCP Invoke handles `isError:true` in result (Phase 2b compatibility)
 - [x] **4b.1:** UUID v4 generation for message envelope IDs
 - [x] **4b.1:** Shutdown stops accepting new messages (`E_SHUTDOWN` guard)
@@ -96,9 +96,9 @@
 - [x] **4b.2:** Spec-aligned error codes: `E_INSUFFICIENT_RESOURCES`, `E_INTERNAL`, `E_SHUTDOWN`, `E_PACKAGE_DENIED`, `E_PACKAGE_MANIFEST_FETCH`, `E_PACKAGE_HAS_RAW_MODEL`
 - [x] **4b.2:** CPU audit from `/proc/cpuinfo` + `/proc/loadavg` (cores, load percent)
 - [x] **4b.2:** NPU audit from `/sys/class/accelerator` + `/dev/npu*`
-- [ ] **4b.2:** Resource negotiation flow (negotiate message type, resource freeing)
-- [ ] **4b.2:** Per-patch MCP server spawning from `runtime.mcp_servers` in manifests
+- [x] **4b.2:** Resource negotiation flow (negotiate message type, resource freeing)
 
+- [x] **4b.2:** Per-patch MCP server spawning from `runtime.mcp_servers` in manifests
 ## M5 — Bootable ISO (Basic UI) ✅ COMPLETE
 - [x] CLI boots on tty1 via inittab
 - [x] Connects to cognitiveosd and shows "ready"
@@ -109,7 +109,7 @@
 - [x] Socket connection with retry (30s) and "Daemon unavailable" state
 - [x] Code entry mode with masked input
 
-## M5b — CLI Spec Compliance ✅ PARTIALLY COMPLETE
+## M5b — CLI Spec Compliance ✅ COMPLETE
 - [x] **5b.1:** Ctrl+D sends `system_code idle` (with confirmation prompt)
 - [x] **5b.1:** Ctrl+Alt+S sends `system_code security` (immediate, any state)
 - [x] **5b.1:** Processing spinner uses dots per spec (`.`, `..`, `...`)
@@ -117,9 +117,9 @@
 - [x] **5b.1:** Output rendering: code blocks (monospace+highlight), lists (bullets), URLs (underlined)
 - [x] **5b.1:** Media mode — `output_deliver` with `content_type:media` transitions to overlay state
 - [x] **5b.2:** History navigation in responding mode (Up/Down)
-- [ ] **5b.2:** Voice input waveform animation
-- [ ] **5b.2:** Shift+Up/Down scrolling for long output
-- [ ] **5b.2:** Tab action button cycling in responding mode
+- [x] **5b.2:** Voice input waveform animation
+- [x] **5b.2:** Shift+Up/Down scrolling for long output
+- [x] **5b.2:** Tab action button cycling in responding mode
 
 ## M6 — Bootable Image with coginit ✅ COMPLETE
 - [x] `make iso` produces bootable x86_64 ISO

@@ -367,7 +367,7 @@ All six bridges (display, audio, network, gpio, serial, package) are implemented
 | Resource negotiation reads `/proc/meminfo` | Replace hardcoded `availableRAM=4096` with real memory reading | Small | ✅ |
 | cograw `--version` flag | Add `--version` flag to match bridge convention | Small | ✅ |
 | cograw cooldown timing fix | Fix `isCooldown()` to use correct 5-minute lockout per spec | Small | ✅ |
-| Status endpoint raw model info | Query raw socket to populate `raw_model.loaded` and `ram_usage_mb` | Medium | ❌ deferred |
+| Status endpoint raw model info | Query raw socket to populate `raw_model.loaded` and `ram_usage_mb` | Medium | ✅ Done |
 
 ### Phase 4: System Daemon
 
@@ -459,9 +459,9 @@ All six bridges (display, audio, network, gpio, serial, package) are implemented
 | Output rendering: code blocks, lists, tables, URLs | cli-spec | Medium | ✅ Done |
 | Media mode — `content_type:media` transitions to overlay state | cli-spec | Medium | ✅ Done |
 | History navigation in responding mode (Up/Down) | cli-spec | Small | ✅ Done |
-| Voice input waveform animation | cli-spec | Medium | Pending |
-| Shift+Up/Down scrolling for long output | cli-spec | Medium | Pending |
-| Tab action button cycling in responding mode | cli-spec | Medium | Pending |
+| Voice input waveform animation | cli-spec | Medium | ✅ Done |
+| Shift+Up/Down scrolling for long output | cli-spec | Medium | ✅ Done |
+| Tab action button cycling in responding mode | cli-spec | Medium | ✅ Done |
 
 ### Phase 6: Distribution Image
 
@@ -674,7 +674,7 @@ ${API_KEY} in manifest  ──►  ResolveSecrets() resolves  ──►  "sk-abc
 | `cpm/cmd/install.go`: early return for `method == "cloud"` or `"local"` | Manifest struct | Small | Done |
 | `cpm/cmd/install.go`: cloud API reachability check | Manifest struct | Small | Done |
 | `inference/internal/cloud/provider.go` — OpenAI-compatible client | None | Medium | Done |
-| `inference/internal/cloud/provider_test.go` — mock HTTP tests | provider.go | Small | Pending |
+| `inference/internal/cloud/provider_test.go` — mock HTTP tests | provider.go | Small | ✅ Done |
 | `inference/internal/engine/engine.go` — cloud backend selection | provider.go | Medium | Done |
 | `inference/internal/config/config.go` — add Cloud* config fields | None | Small | Done |
 | `cognitiveosd/internal/config/config.go` — cloud fields in TOML | None | Small | Done |
