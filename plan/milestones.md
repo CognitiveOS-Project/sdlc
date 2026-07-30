@@ -50,8 +50,11 @@
 - [x] **2b.1:** Serial list_ports structured output with description/vendor
 - [x] **2b.1:** Display render_image `fit` parameter
 - [x] **2b.2:** Spec-aligned error codes per bridge (E_BUSY, E_NO_DEVICE, etc.)
-- [ ] **2b.2:** Logging to `/cognitiveos/logs/bridges/<name>.log`
+- [x] **2b.2:** Logging to `/cognitiveos/logs/bridges/<name>.log`
 - [ ] **2b.2:** Resource cost annotations on tools
+- [x] **2b.3:** Bridge error envelope format (`ERROR:<CODE>:<message>`)
+- [x] **2b.3:** `outputSchema` in tool metadata
+- [x] **2b.3:** `--version` flag on all bridges
 
 ## M3 — Inference Engine ✅ COMPLETE
 - [x] `POST /api/generate` produces completions from Raw Model
@@ -63,7 +66,7 @@
 - [x] RSA unlock code verification with cooldown
 - [x] **Demo:** Raw Model responds to a query
 
-## M3b — Inference Spec Compliance
+## M3b — Inference Spec Compliance ✅ MOSTLY COMPLETE
 - [x] **3b.1:** Idle timeout auto-unload (5 min)
 - [x] **3b.1:** DELETE /api/delete returns ram_freed_mb
 - [x] **3b.1:** GET /api/ps includes processor/gpu_layers/context_usage_percent
@@ -84,7 +87,7 @@
 - [x] Hardware audit runs on interval
 - [ ] **Demo:** End-to-end: "Show me photo" → AI calls display-mcp → photo appears
 
-## M4b — Daemon Spec Compliance ✅ COMPLETE
+## M4b — Daemon Spec Compliance ✅ MOSTLY COMPLETE
 - [x] **4b.1:** Bridge error format: MCP Invoke handles `isError:true` in result (Phase 2b compatibility)
 - [x] **4b.1:** UUID v4 generation for message envelope IDs
 - [x] **4b.1:** Shutdown stops accepting new messages (`E_SHUTDOWN` guard)
@@ -106,7 +109,7 @@
 - [x] Socket connection with retry (30s) and "Daemon unavailable" state
 - [x] Code entry mode with masked input
 
-## M5b — CLI Spec Compliance
+## M5b — CLI Spec Compliance ✅ PARTIALLY COMPLETE
 - [x] **5b.1:** Ctrl+D sends `system_code idle` (with confirmation prompt)
 - [x] **5b.1:** Ctrl+Alt+S sends `system_code security` (immediate, any state)
 - [x] **5b.1:** Processing spinner uses dots per spec (`.`, `..`, `...`)
@@ -150,8 +153,8 @@
 - [x] `cpm publish ./skill.cgp --download-url <url>` registers in registry
 - [x] `cpm install <name>` downloads via registry redirect
 - [x] `cpm init my-skill` creates valid .cgp skeleton
-- [ ] SQLite backend (upgrade from file-backed JSON)
-- [ ] Full unlock code flow end-to-end
+- [ ] SQLite backend (upgrade from file-backed JSON) — flag misnamed (`-sqlite` loads JSON FileStore)
+- [x] Unlock code flow: server-side complete (`POST /v1/patches/{name}/{version}/unlock` with SHA-256 hash)
 - [ ] **Demo:** `cpm search photo` → `cpm install photo-viewer` → AI can show photos
 
 ## M8 — v0.1.0 Release

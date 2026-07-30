@@ -580,17 +580,17 @@ The registry is a **notary proxy** — it does not host `.cgp` files. Publishers
 | Task | Dependencies | Est. effort | Status |
 |------|-------------|-------------|--------|
 | ADR-004: Package Manager MCP Bridge decision record | None | Small | ✅ Done |
-| `product-specs/specs/base-prompt.md` — daemon-level system prompt | None | Small | Pending |
-| `cognitiveos.package.*` domain in mcp-conventions.md | None | Small | Pending |
-| `validate_package_request` RPC in raw-model.md spec | None | Small | Pending |
-| Validation-hook section in cognitiveosd-api.md | None | Small | Pending |
-| `package-mcp` bridge in core-mcp-bridges/ | MCP server library | Medium | Pending |
-| MCP validation hook in cognitiveosd mcp_lifecycle.go | cognitiveosd-api spec | Small | Pending |
-| `validate_package_request` handler in cograw | raw-model.md spec | Small | Pending |
-| `ValidatePackageRequest` method in raw_client.go | None | Small | Pending |
-| `package-mcp` in default MCPBridges config | None | Small | Pending |
-| Base system prompt injection in daemon startup | None | Small | Pending |
-| Tool validation wiring in handlers.go (toolLoop) | None | Small | Pending |
+| `product-specs/specs/base-prompt.md` — daemon-level system prompt | None | Small | ✅ Done |
+| `cognitiveos.package.*` domain in mcp-conventions.md | None | Small | ✅ Done |
+| `validate_package_request` RPC in raw-model.md spec | None | Small | ✅ Done |
+| Validation-hook section in cognitiveosd-api.md | None | Small | ✅ Done |
+| `package-mcp` bridge in core-mcp-bridges/ | MCP server library | Medium | ✅ Done |
+| MCP validation hook in cognitiveosd mcp_lifecycle.go | cognitiveosd-api spec | Small | ✅ Done |
+| `validate_package_request` handler in cograw | raw-model.md spec | Small | ✅ Done |
+| `ValidatePackageRequest` method in raw_client.go | None | Small | ✅ Done |
+| `package-mcp` in default MCPBridges config | None | Small | ✅ Done |
+| Base system prompt injection in daemon startup | None | Small | ✅ Done |
+| Tool validation wiring in handlers.go (toolLoop) | None | Small | ✅ Done |
 
 **Definition of done:**
 - Wide Model calls `cognitiveos.package.search("photo viewer")` → daemon validates → package-mcp runs `cpm search`
