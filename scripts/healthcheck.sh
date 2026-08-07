@@ -3,9 +3,9 @@
 set -e
 
 # ── Config ──
-ALL_REPOS="coginit cognitiveos product-specs sdlc cpm core-mcp-bridges inference cognitiveosd cli cognitiveos-alpine-distro registry-server cgp-template"
+ALL_REPOS="coginit cognitiveos product-specs sdlc cpm core-mcp-bridges inference cognitiveosd cli cognitiveos-alpine-distro registry-server cgp-template cogsdk"
 
-GO_REPOS="inference cognitiveosd cli coginit cpm core-mcp-bridges registry-server"
+GO_REPOS="inference cognitiveosd cli coginit cpm core-mcp-bridges registry-server cogsdk"
 SHELL_REPOS="cognitiveos-alpine-distro sdlc"
 CGO_REPOS="inference"
 BUILD_REPOS="coginit cpm inference core-mcp-bridges cognitiveosd cli"
