@@ -11,3 +11,6 @@ Thumbs.db
 # Editor backups
 * 2.*
 reports/
+
+# macOS AppleDouble / Finder metadata
+._*
