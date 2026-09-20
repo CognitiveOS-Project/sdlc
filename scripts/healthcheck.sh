@@ -82,7 +82,7 @@ clone_repo() {
   if [ -d "$dir/.git" ]; then
     git -C "$dir" fetch origin "$BRANCH" --depth=1 --quiet 2>/dev/null
     git -C "$dir" fetch origin --tags --quiet 2>/dev/null || true
-    git -C "$dir" checkout -f "origin/$BRANCH" --quiet 2>/dev/null
+    git -C "$dir" checkout -B "$BRANCH" "origin/$BRANCH" --quiet 2>/dev/null
     return 0
   fi
   git clone --depth=1 "git@github.com:CognitiveOS-Project/${repo}.git" "$dir" --branch "$BRANCH" --quiet 2>/dev/null
