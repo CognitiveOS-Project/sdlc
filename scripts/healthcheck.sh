@@ -313,7 +313,7 @@ check_repo_visibility() {
     return
   fi
   local vis
-  vis=$(gh -R "CognitiveOS-Project/$label" repo view --json visibility --jq '.visibility' 2>/dev/null || echo "UNKNOWN")
+  vis=$(gh api "repos/CognitiveOS-Project/$label" --jq '.visibility' 2>/dev/null | tr '[:lower:]' '[:upper:]' || echo "UNKNOWN")
   if [ "$vis" = "PUBLIC" ]; then
     check "visibility ($label)" pass "PUBLIC"
   elif [ "$vis" = "PRIVATE" ]; then
