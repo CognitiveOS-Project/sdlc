@@ -157,9 +157,10 @@
 - [x] Unlock code flow: server-side complete (`POST /v1/patches/{name}/{version}/unlock` with SHA-256 hash)
 - [ ] **Demo:** `cpm search photo` → `cpm install photo-viewer` → AI can show photos
 
-## M8 — v0.1.0 Release
-- [ ] All repos tagged `v0.1.0`
-- [ ] Bootable ISO published to GitHub Releases
-- [ ] RPi image published
-- [ ] Registry running at registry.cognitive-os.org
-- [ ] Release notes written
+## M8 — v1.x Release (coordinated)
+- [x] All repos tagged `v1.1.0-alpha` (annotated, coordinated across 15 org repos via `sdlc/scripts/release-tag.sh`)
+- [x] Bootable ISO published to GitHub Releases — `v1.0.9-alpha` asset matrix live (standard/edge/gateway/titan/micro ISOs + tarballs + SHA256SUMS)
+- [ ] Bootable ISO for `v1.1.0-alpha` — variant pipelines triggered on tag push but failed on CI infra (`make` missing, alpine aports 418); pending re-run, no assets yet
+- [x] RPi image published — `v1.0.9-alpha` aarch64/armv7 images
+- [x] Registry running at registry-us-all-distros-official.cognitive-os.org (`/v1/health`, `/v1/search`, `/ui/` verified live)
+- [x] Release notes written — see `v1.1.0-alpha` release notes on cognitiveos-alpine-distro

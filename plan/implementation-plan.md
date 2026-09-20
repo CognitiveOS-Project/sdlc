@@ -749,9 +749,8 @@ M6  ─── Distribution image builds                   (Phase 6)
       │
 M7  ─── Registry online, cpm install from it        (Phase 7)
   │
-M8  ─── Secret management + cloud models            (Phase 9 + 10)
-  │
-M9  ─── v0.1.0 release                             (ALL PHASES)
+M8  ─── v1.x coordinated release                    (ALL PHASES)
+        tags + ISOs + registry + release notes
 ```
 
 ## Risk Register
