@@ -163,4 +163,4 @@
 - [ ] Bootable ISO for `v1.1.0-alpha` — variant pipelines triggered on tag push but failed on CI infra (`make` missing, alpine aports 418); pending re-run, no assets yet
 - [x] RPi image published — `v1.0.9-alpha` aarch64/armv7 images
 - [x] Registry running at registry-us-all-distros-official.cognitive-os.org (`/v1/health`, `/v1/search`, `/ui/` verified live)
-- [x] Release notes written — see `v1.1.0-alpha` release notes on cognitiveos-alpine-distro
+- [x] Release notes written — in the annotated `v1.1.0-alpha` tag message on every repo (coordination releases are cut only via `sdlc/scripts/release-tag.sh`; GitHub Release objects with binaries are produced solely by the distro `release.yml` aggregator)
