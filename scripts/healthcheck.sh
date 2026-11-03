@@ -100,7 +100,7 @@ check_go_build() {
     check "go build $label" skip "go not installed"
     return
   fi
-  if (cd "$dir" && CGO_ENABLED=0 go build -o /dev/null ./... 2>&1); then
+  if (cd "$dir" && CGO_ENABLED=0 go build -o /dev/null ./... >/dev/null 2>&1); then
     check "go build $label" pass
   else
     check "go build $label" fail "build error"
@@ -113,7 +113,7 @@ check_go_vet() {
     check "go vet $label" skip "go not installed"
     return
   fi
-  if (cd "$dir" && CGO_ENABLED=0 go vet ./... 2>&1); then
+  if (cd "$dir" && CGO_ENABLED=0 go vet ./... >/dev/null 2>&1); then
     check "go vet $label" pass
   else
     check "go vet $label" fail "vet errors"
