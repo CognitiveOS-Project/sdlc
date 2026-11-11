@@ -18,3 +18,11 @@ This repo defines **how we build** CognitiveOS. It is the process layer above th
 - Branch from `main`, PR to `main`, no rebase
 - Commit types: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
 - Go code must pass `gofmt -s` and `go vet`
+
+## Process Enforcements (MANDATORY)
+
+All work in this repo MUST follow the CognitiveOS Process Enforcements:
+
+- `docs/ENFORCEMENTS.md` — SPECv1, GHW, VibeLeading, ABSEv1 (RFC 2119 MUST-level rules)
+
+These enforcements are binding on every contributor, agent, and automation. No work may bypass them except on explicit user instruction (maintainer emergency).
