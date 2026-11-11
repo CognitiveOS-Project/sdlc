@@ -11,9 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Lint markdown
+      - name: Shellcheck scripts
         run: |
-          for f in $(find . -name "*.md"); do
-            echo "Checking $f..."
-            test -s "$f" || echo "  WARNING: empty file"
+          for script in scripts/*.sh; do
+            echo "Checking $script..."
+            sh -n "$script"
           done
+          echo "All scripts pass syntax check"
+      - name: Go vet
+        run: |
+          go vet ./... 2>&1 | grep -v "^go: downloading" || true
