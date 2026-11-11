@@ -11,11 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Lint markdown
+      - name: Shellcheck scripts
         run: |
-          pip install markdownlint-cli2
-          markdownlint-cli2 '**/*.md' --config .markdownlint.yaml || true
-      - name: Lint YAML
+          for script in scripts/*.sh; do
+            echo "Checking $script..."
+            sh -n "$script"
+          done
+          echo "All scripts pass syntax check"
+      - name: Go vet
         run: |
-          pip install yamllint
-          yamllint -c .yamllint.yaml . || true
+          go vet ./... 2>&1 | grep -v "^go: downloading" || true

@@ -7,20 +7,40 @@
 3. Read the relevant spec in [product-specs](https://github.com/CognitiveOS-Project/product-specs)
 4. Find an open issue or create one describing what you want to work on
 
-## Branching
+## Branching — Per-Repo, Scoped GHW Flow
 
-All repos follow the same workflow:
+All repos follow the same **per-repo scoped** workflow. Complete the full cycle for one repo before moving to the next:
 
 ```bash
 git fetch origin
-git checkout -b feature/<short-description> main
+git checkout -b feature/<short-description> development   # branch from development, not main
 # make changes
 git add .
 git commit -m "<type>: <description>"
 git push -u origin HEAD
 ```
 
-Create a PR into `main`. See the root `AGENTS.md` and `.opencode/instructions/git-workflow.md` in the workspace root for full details.
+**Rules:**
+1. One repo at a time. Do not switch to another repo until the PR cycle is fully merged to `main`.
+2. Branch from `development`, not `main`.
+3. No `git rebase`. Use `git pull` (merge) to update from remote.
+4. Commit types: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
+5. Direct push to `main` or `development` is prohibited except on explicit user instruction (maintainer emergency).
+
+## Pull Request Process — Full Cycle Per Repo
+
+Do not open the next repo's PR until this repo's cycle is complete:
+
+1. **Topic branch → `development`**: Open a PR from your topic branch into `development`.
+2. **Wait for CI**: Check that all CI checks pass on the PR (shellcheck, go vet, lint, tests).
+3. **Fix CI failures**: If CI fails, push fixes to the same topic branch and re-check.
+4. **Merge to `development`**: Squash merge only after CI is green.
+5. **`development` → `main` (release PR)**: Open a PR from `development` into `main`.
+6. **Wait for CI**: Check CI passes on the release PR.
+7. **Merge to `main`**: Only merge after CI is green.
+8. **Verify sync**: Confirm `main` == `development` locally before moving to the next repo.
+
+**No orphan topic branches:** Every pushed branch must have an open PR, and every open PR must be merged or closed before switching repos.
 
 Commit types:
 - `feat:` — New feature
