@@ -15,9 +15,22 @@ This repo defines **how we build** CognitiveOS. It is the process layer above th
 ## Rules
 
 - All repos follow the git workflow defined in root `.opencode/instructions/git-workflow.md`
-- Branch from `main`, PR to `main`, no rebase
+- Branch from `development`, not `main`
+- Use topic branches: `feature/<name>`, `fix/<name>`, `bugfix/<name>`
+- Open a PR to `development` — squash merge after review
+- Changes flow to `main` via a release PR (never push directly to `main` or `development`)
+- No rebase — prefer `git pull` (merge)
 - Commit types: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
 - Go code must pass `gofmt -s` and `go vet`
+
+## Process Enforcements (MANDATORY)
+
+All work in this repo MUST follow the CognitiveOS Process Enforcements:
+
+- `docs/ENFORCEMENTS.md` — SPECv1, GHW, VibeLeading, ABSEv1
+- `product-specs/docs/ENFORCEMENTS.md` — same content (mirror)
+
+These enforcements are binding on every contributor, agent, and automation. No work may bypass them except on explicit user instruction (maintainer emergency).
 
 ## Process Enforcements (MANDATORY)
 
