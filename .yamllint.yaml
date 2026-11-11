@@ -1,0 +1,16 @@
+# YAML linting configuration for CognitiveOS SDLC
+extends: default
+rules:
+  line-length:
+    max: 120
+    level: warning
+  trailing-spaces: warning
+  indentation:
+    spaces: 2
+    level: warning
+  document-start: warning
+  quotes:
+    avoid: warning
+  brackets:
+    max-spaces-inside: 1
+    level: warning
