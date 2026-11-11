@@ -13,7 +13,16 @@ jobs:
       - uses: actions/checkout@v4
       - name: Lint markdown
         run: |
-          for f in $(find . -name "*.md"); do
-            echo "Checking $f..."
-            test -s "$f" || echo "  WARNING: empty file"
+          npm install -g markdownlint-cli2
+          markdownlint-cli2 '**/*.md' --config .markdownlint.yaml || true
+      - name: Lint YAML
+        run: |
+          pip install yamllint
+          yamllint -c .yamllint.yaml . || true
+      - name: Shellcheck scripts
+        run: |
+          for script in scripts/*.sh; do
+            echo "Checking $script..."
+            sh -n "$script"
           done
+          echo "All scripts pass syntax check"
