@@ -21,4 +21,3 @@ jobs:
       - name: Go vet
         run: |
           go vet ./... 2>&1 | grep -v "^go: downloading" || true
-test
