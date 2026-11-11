@@ -159,8 +159,9 @@
 
 ## M8 — v1.x Release (coordinated)
 - [x] All repos tagged `v1.1.0-alpha` (annotated, coordinated across 15 org repos via `sdlc/scripts/release-tag.sh`)
+- [x] All repos tagged `v1.1.0-beta` (annotated, coordinated across 15 org repos via `sdlc/scripts/release-tag.sh`) — all open enhancement issues resolved
 - [x] Bootable ISO published to GitHub Releases — `v1.0.9-alpha` asset matrix live (standard/edge/gateway/titan/micro ISOs + tarballs + SHA256SUMS)
-- [ ] Bootable ISO for `v1.1.0-alpha` — variant pipelines triggered on tag push but failed on CI infra (`make` missing, alpine aports 418); pending re-run, no assets yet
+- [ ] Bootable ISO for `v1.1.0-beta` — variant pipelines triggered on tag push but failed on CI infra (`make` missing, alpine aports 418); code fixes merged (`make` in MKIMAGE_DEPS, `APORTS_GIT` GitHub mirror, script-location-derived paths); pending CI re-run, no assets yet
 - [x] RPi image published — `v1.0.9-alpha` aarch64/armv7 images
 - [x] Registry running at registry-us-all-distros-official.cognitive-os.org (`/v1/health`, `/v1/search`, `/ui/` verified live)
-- [x] Release notes written — in the annotated `v1.1.0-alpha` tag message on every repo (coordination releases are cut only via `sdlc/scripts/release-tag.sh`; GitHub Release objects with binaries are produced solely by the distro `release.yml` aggregator)
+- [x] Release notes written — in the annotated `v1.1.0-beta` tag message on every repo (coordination releases are cut only via `sdlc/scripts/release-tag.sh`; GitHub Release objects with binaries are produced solely by the distro `release.yml` aggregator)
