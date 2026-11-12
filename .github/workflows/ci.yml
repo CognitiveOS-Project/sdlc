@@ -21,3 +21,15 @@ jobs:
       - name: Go vet
         run: |
           go vet ./... 2>&1 | grep -v "^go: downloading" || true
+      - name: Markdown linting
+        run: |
+          pip install markdownlint-cli2
+          markdownlint-cli2 '**/*.md' --config .markdownlint.yaml
+      - name: YAML linting
+        run: |
+          pip install yamllint
+          yamllint -c .yamllint.yaml .
+      - name: Spell checking
+        run: |
+          pip install codespell
+          codespell --skip="*.svg,*.png,*.jpg,*.jpeg,*.gif,*.ico,*.woff,*.woff2,*.ttf,*.eot,*.pdf,*.zip,*.tar.gz,*.tar.bz2,*.tar.xz" '**/*.md'
